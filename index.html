@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>헤이딜러 매입 후보</title>
+<meta name="description" content="망고카 최근 2개월 매입 데이터 기반, 헤이딜러 유사 매물 자동 추천 (매일 아침 갱신)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#f6f4ef;
+    --surface:#ffffff;
+    --surface-alt:#efeae0;
+    --border:#e2dccd;
+    --text:#211d17;
+    --text-muted:#75705f;
+    --accent:#2d3a5c;
+    --accent-soft:#e4e8f2;
+    --accent-ink:#ffffff;
+    --good:#396b4c;
+    --good-soft:#dfeee3;
+    --warn:#93641d;
+    --warn-soft:#f5e8cd;
+    --bad:#9a3f36;
+    --bad-soft:#f6e0dc;
+    --shadow: 0 1px 2px rgba(33,29,23,0.04), 0 8px 24px -12px rgba(33,29,23,0.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#14161b;
+      --surface:#1b1e25;
+      --surface-alt:#22252d;
+      --border:#2d313b;
+      --text:#ece9e1;
+      --text-muted:#9a978d;
+      --accent:#7688b8;
+      --accent-soft:#242c40;
+      --accent-ink:#0f1117;
+      --good:#6bbf8e;
+      --good-soft:#1c2f24;
+      --warn:#dcac52;
+      --warn-soft:#332a16;
+      --bad:#e08277;
+      --bad-soft:#33201d;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14161b;
+    --surface:#1b1e25;
+    --surface-alt:#22252d;
+    --border:#2d313b;
+    --text:#ece9e1;
+    --text-muted:#9a978d;
+    --accent:#7688b8;
+    --accent-soft:#242c40;
+    --accent-ink:#0f1117;
+    --good:#6bbf8e;
+    --good-soft:#1c2f24;
+    --warn:#dcac52;
+    --warn-soft:#332a16;
+    --bad:#e08277;
+    --bad-soft:#33201d;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{color:var(--text);font-family:"IBM Plex Sans KR","Pretendard",-apple-system,sans-serif;line-height:1.5;}
+  img{max-width:100%;}
+  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
+  header.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:24px;margin-bottom:20px;border-bottom:1px solid var(--border);}
+  .title-block h1{font-family:"Sora",sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.01em;margin:0 0 6px;text-wrap:balance;}
+  .title-block p{margin:0;color:var(--text-muted);font-size:13.5px;max-width:64ch;}
+  .meta-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);}
+  .chip b{color:var(--text);font-weight:600;}
+  .chip .num{color:var(--accent);font-weight:600;}
+
+  .rule-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);font-size:12.5px;color:var(--text-muted);display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+  .rule-box .rule{padding-left:12px;border-left:2px solid var(--accent-soft);}
+  .rule-box .rule b{display:block;color:var(--text);font-size:13px;margin-bottom:2px;}
+  .rule-box .rule.highlight{border-left-color:var(--good);}
+  @media (max-width:760px){.rule-box{grid-template-columns:1fr;}}
+
+  .snapshot-note{font-size:11.5px;color:var(--text-muted);background:var(--accent-soft);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:20px;}
+
+  .tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab-btn{appearance:none;border:none;background:none;cursor:pointer;font-family:"IBM Plex Sans KR",sans-serif;font-size:14.5px;font-weight:600;color:var(--text-muted);padding:10px 6px 12px;border-bottom:2.5px solid transparent;display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;}
+  .tab-btn .count{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;background:var(--surface-alt);color:var(--text-muted);border-radius:999px;padding:2px 8px;}
+  .tab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);}
+  .tab-btn[aria-selected="true"] .count{background:var(--accent);color:var(--accent-ink);}
+  .tab-btn .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:0.02em;}
+  .tab-btn.strong .tag{background:var(--good-soft);color:var(--good);}
+  .tab-btn.normal .tag{background:var(--warn-soft);color:var(--warn);}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .panel-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:0 0 14px;}
+  .tab-desc{font-size:12.5px;color:var(--text-muted);margin:0;}
+
+  .sort-group{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-muted);flex-shrink:0;}
+  .sort-group .sort-label{margin-right:2px;}
+  .sort-btn{appearance:none;cursor:pointer;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);font-family:inherit;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;transition:background .15s ease,color .15s ease;}
+  .sort-btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
+
+  .list{display:flex;flex-direction:column;gap:8px;}
+  .row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);display:grid;grid-template-columns:28px 1.4fr 1.6fr auto auto;gap:14px;align-items:center;}
+  .row .rank{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-muted);text-align:center;}
+  .row .cat{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .row .cat .brand-model{font-weight:600;font-size:14px;}
+  .row .cat .target{font-size:11px;color:var(--text-muted);}
+  .row .detail{display:flex;flex-direction:column;gap:4px;min-width:0;}
+  .row .detail .trim{font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .row .spec-row{display:flex;gap:5px;flex-wrap:wrap;}
+  .spec{background:var(--surface-alt);border-radius:7px;padding:2px 7px;font-size:10.5px;color:var(--text-muted);white-space:nowrap;}
+  .spec.eye{color:var(--accent);}
+  .spec.reserved{background:var(--bad-soft);color:var(--bad);}
+  .row .price-block{text-align:right;display:flex;flex-direction:column;gap:2px;}
+  .row .price-block .price-krw{font-family:"Sora",sans-serif;font-weight:700;font-size:16px;white-space:nowrap;}
+  .row .price-block .price-usd{font-size:10.5px;color:var(--text-muted);}
+  .gap-badge{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:8px;white-space:nowrap;justify-self:end;}
+  .gap-badge.good{background:var(--good-soft);color:var(--good);}
+  .gap-badge.warn{background:var(--warn-soft);color:var(--warn);}
+  .row.cheaper{border-color:var(--good);}
+  a.view-btn{display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;white-space:nowrap;transition:opacity .15s ease;}
+  a.view-btn:hover{opacity:0.88;}
+  a.view-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+
+  @media (max-width:820px){
+    .row{grid-template-columns:1fr;grid-template-areas:"cat" "detail" "price" "link";}
+    .row .rank{display:none;}
+    .row .price-block{text-align:left;flex-direction:row;justify-content:space-between;align-items:center;}
+  }
+
+  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title-block">
+      <h1>헤이딜러 매입 후보</h1>
+      <p>망고카 최근 2개월(2026년 7~8월) 매입 데이터 상위 20개 모델 기준, 헤이딜러 재고 매물을 가격 경쟁력에 따라 <b>적극 추천</b> / <b>추천</b> 두 단계로 나눠 리스트 형태로 보여줍니다.</p>
+    </div>
+    <div class="meta-chips">
+      <span class="chip">갱신 <b id="updatedAt">-</b></span>
+      <span class="chip">환율 <span class="num">1,337.70</span>원/$</span>
+      <span class="chip">대상 모델 <span class="num">20</span>개</span>
+    </div>
+  </header>
+
+  <div class="rule-box">
+    <div class="rule highlight"><b>즉시 적극 추천</b>헤이딜러 광고가가 망고 매입가보다 낮은 매물 (가격차 마이너스)</div>
+    <div class="rule"><b>가격 밴드 (적극 추천)</b>목표가 5,000불 이하 → ±500불 / 초과 → ±1,000불 이내</div>
+    <div class="rule"><b>추천 범위</b>밴드를 벗어나지만 목표가와 2,000불 미만 차이</div>
+    <div class="rule"><b>제외 기준</b>목표가와 2,000불 이상 차이나는 매물은 표시하지 않음</div>
+  </div>
+
+  <div class="snapshot-note" id="snapshotNote"></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-btn strong" role="tab" aria-selected="true" data-tab="strong">
+      <span class="tag">적극 추천</span> 적극 추천 차량 <span class="count" id="countStrong">0</span>
+    </button>
+    <button class="tab-btn normal" role="tab" aria-selected="false" data-tab="normal">
+      <span class="tag">추천</span> 추천 차량 <span class="count" id="countNormal">0</span>
+    </button>
+  </div>
+
+  <div class="tab-panel active" id="panel-strong">
+    <div class="panel-head">
+      <p class="tab-desc">헤이딜러가 망고 매입가보다 낮은 매물, 또는 밴드(±500~1,000불) 이내 매물 중 가장 경쟁력 있는 순으로 최대 10대입니다.</p>
+      <div class="sort-group" data-panel="strong">
+        <span class="sort-label">정렬</span>
+        <button class="sort-btn" data-sort="gap" aria-pressed="true">가격차 순</button>
+        <button class="sort-btn" data-sort="name" aria-pressed="false">차량 이름순</button>
+      </div>
+    </div>
+    <div class="list" id="listStrong"></div>
+  </div>
+  <div class="tab-panel" id="panel-normal">
+    <div class="panel-head">
+      <p class="tab-desc">밴드를 벗어났지만 목표가와 2,000불 미만 차이로, 매입을 검토해볼 만한 매물 최대 30대입니다.</p>
+      <div class="sort-group" data-panel="normal">
+        <span class="sort-label">정렬</span>
+        <button class="sort-btn" data-sort="gap" aria-pressed="true">가격차 순</button>
+        <button class="sort-btn" data-sort="name" aria-pressed="false">차량 이름순</button>
+      </div>
+    </div>
+    <div class="list" id="listNormal"></div>
+  </div>
+
+  <footer>
+    <div>가격은 헤이딜러 인증 소비자 판매가 기준(할인 적용가)이며, 망고카 실제 매입 단가와는 차이가 있을 수 있습니다.</div>
+    <div>전체 20개 모델의 로드된 매물을 모두 스캔한 뒤, 가격 경쟁력(헤이딜러가 − 망고 매입가) 기준으로 정렬해 상위 항목만 보여줍니다.</div>
+    <div>매일 오전 9시(KST) 20개 모델 재조회 → 등급/정렬 재적용 → 이 페이지 자동 갱신.</div>
+  </footer>
+</div>
+
+<script>
+const DATA = {"strong": [{"id": "Wnqe0qnL", "category": "벤츠 GLC클래스", "trim": "GLC220d 4MATIC", "year": "2016년", "yearline": "2016년 (16/02)ㆍ12.9만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1820.0, "targetUsd": 15500, "targetManwon": 2073.4, "diffManwon": -253.4, "url": "https://www.heydealer.com/market/cars/Wnqe0qnL"}, {"id": "qyLXBRyR", "category": "아우디 A6", "trim": "3.0 TDI 콰트로 (C7)", "year": "2013년", "yearline": "2013년 (13/05)ㆍ13.4만km", "accident": "무사고", "eye": false, "reserved": true, "priceManwon": 850.0, "targetUsd": 8228, "targetManwon": 1100.7, "diffManwon": -250.7, "url": "https://www.heydealer.com/market/cars/qyLXBRyR"}, {"id": "BQ4wYWnR", "category": "BMW 5시리즈", "trim": "520d 럭셔리 (F10)", "year": "2014년", "yearline": "2014년 (14/01)ㆍ13.2만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1090.0, "targetUsd": 9900, "targetManwon": 1324.3, "diffManwon": -234.3, "url": "https://www.heydealer.com/market/cars/BQ4wYWnR"}, {"id": "XlX4p1lY", "category": "벤츠 GLC클래스", "trim": "GLC220d 4MATIC", "year": "2017년", "yearline": "2017년 (17/06)ㆍ16.6만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1890.0, "targetUsd": 15500, "targetManwon": 2073.4, "diffManwon": -183.4, "url": "https://www.heydealer.com/market/cars/XlX4p1lY"}, {"id": "WnqErqnL", "category": "르노코리아 QM6", "trim": "디젤 2WD RE시그니처", "year": "2017년", "yearline": "2017년 (17/11)ㆍ9.4만km", "accident": "무사고", "eye": true, "reserved": true, "priceManwon": 890.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": -5.2, "url": "https://www.heydealer.com/market/cars/WnqErqnL"}, {"id": "VljEj3QG", "category": "현대 투싼", "trim": "디젤 1.7 2WD 스타일", "year": "2016년", "yearline": "2016년 (15/11)ㆍ14.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 780.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 15.5, "url": "https://www.heydealer.com/market/cars/VljEj3QG"}, {"id": "Glx7YpQr", "category": "현대 투싼", "trim": "디젤(e-VGT) 2WD 스마트 스페셜", "year": "2014년", "yearline": "2014년 (13/06)ㆍ11.9만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 790.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 25.5, "url": "https://www.heydealer.com/market/cars/Glx7YpQr"}, {"id": "bQ9OEoy3", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄 7인승", "year": "2013년", "yearline": "2013년 (13/05)ㆍ12만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 830.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 33.1, "url": "https://www.heydealer.com/market/cars/bQ9OEoy3"}, {"id": "dnKo5ono", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄", "year": "2015년", "yearline": "2015년 (14/03)ㆍ14.7만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 830.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 33.1, "url": "https://www.heydealer.com/market/cars/dnKo5ono"}, {"id": "dnKjROyo", "category": "르노코리아 QM6", "trim": "디젤 2WD RE", "year": "2018년", "yearline": "2018년 (18/04)ㆍ12.9만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 950.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 54.8, "url": "https://www.heydealer.com/market/cars/dnKjROyo"}], "normal": [{"id": "gQ6o8Kl0", "category": "르노코리아 QM3", "trim": "QM3", "year": "2016년", "yearline": "2016년 (16/04)ㆍ10.9만km", "accident": "완전무사고", "eye": true, "reserved": true, "priceManwon": 590.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 91.3, "url": "https://www.heydealer.com/market/cars/gQ6o8Kl0"}, {"id": "znExW1yq", "category": "르노코리아 QM3", "trim": "QM3", "year": "2016년", "yearline": "2016년 (16/08)ㆍ5.5만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 630.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 131.3, "url": "https://www.heydealer.com/market/cars/znExW1yq"}, {"id": "2yMJ48nW", "category": "벤츠 C클래스", "trim": "C220d 아방가르드", "year": "2016년", "yearline": "2016년 (15/08)ㆍ12.6만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 1260.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 133.9, "url": "https://www.heydealer.com/market/cars/2yMJ48nW"}, {"id": "myAxODlp", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/04)ㆍ16.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 570.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 141.4, "url": "https://www.heydealer.com/market/cars/myAxODlp"}, {"id": "XlXeWOyY", "category": "르노코리아 QM3", "trim": "QM3", "year": "2015년", "yearline": "2015년 (15/09)ㆍ8.8만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 650.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 151.3, "url": "https://www.heydealer.com/market/cars/XlXeWOyY"}, {"id": "Yn300VQp", "category": "르노코리아 QM6", "trim": "디젤 4WD RE시그니처", "year": "2017년", "yearline": "2017년 (17/05)ㆍ14.2만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1050.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 154.8, "url": "https://www.heydealer.com/market/cars/Yn300VQp"}, {"id": "7yBmeXlE", "category": "현대 투싼", "trim": "디젤(e-VGT) 2WD 스마트 스페셜", "year": "2014년", "yearline": "2014년 (13/05)ㆍ5.7만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 920.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 155.5, "url": "https://www.heydealer.com/market/cars/7yBmeXlE"}, {"id": "pnW6kjy1", "category": "르노코리아 QM3", "trim": "QM3", "year": "2017년", "yearline": "2017년 (17/06)ㆍ10.2만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 660.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 161.3, "url": "https://www.heydealer.com/market/cars/pnW6kjy1"}, {"id": "KlG7POlO", "category": "벤츠 C클래스", "trim": "C220 블루텍 아방가르드", "year": "2015년", "yearline": "2015년 (14/07)ㆍ9.7만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1290.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 163.9, "url": "https://www.heydealer.com/market/cars/KlG7POlO"}, {"id": "plRJ2jlb", "category": "르노코리아 QM3", "trim": "QM3", "year": "2014년", "yearline": "2014년 (14/05)ㆍ9.1만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 670.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 171.3, "url": "https://www.heydealer.com/market/cars/plRJ2jlb"}, {"id": "qyLkmmlR", "category": "르노코리아 QM3", "trim": "QM3", "year": "2017년", "yearline": "2017년 (17/03)ㆍ12.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 670.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 171.3, "url": "https://www.heydealer.com/market/cars/qyLkmmlR"}, {"id": "Wnq9OmnL", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄", "year": "2014년", "yearline": "2014년 (13/08)ㆍ12만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 970.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 173.1, "url": "https://www.heydealer.com/market/cars/Wnq9OmnL"}, {"id": "knvE3jyJ", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 익스클루시브", "year": "2014년", "yearline": "2014년 (14/01)ㆍ11.5만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 970.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 173.1, "url": "https://www.heydealer.com/market/cars/knvE3jyJ"}, {"id": "gQzppwyK", "category": "르노코리아 QM3", "trim": "QM3", "year": "2015년", "yearline": "2015년 (14/11)ㆍ5.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 181.3, "url": "https://www.heydealer.com/market/cars/gQzppwyK"}, {"id": "wn2GoDQm", "category": "BMW 3시리즈", "trim": "320d (F30)", "year": "2017년", "yearline": "2017년 (17/05)ㆍ12.5만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1285.0, "targetUsd": 8200, "targetManwon": 1096.9, "diffManwon": 188.1, "url": "https://www.heydealer.com/market/cars/wn2GoDQm"}, {"id": "KlGv5OQO", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄 7인승", "year": "2015년", "yearline": "2015년 (15/03)ㆍ9.3만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 990.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 193.1, "url": "https://www.heydealer.com/market/cars/KlGv5OQO"}, {"id": "BQ484LQR", "category": "벤츠 C클래스", "trim": "C200d", "year": "2016년", "yearline": "2016년 (16/08)ㆍ8.1만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1320.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 193.9, "url": "https://www.heydealer.com/market/cars/BQ484LQR"}, {"id": "andKo2yb", "category": "현대 싼타페", "trim": "디젤 2.0 2WD 프리미엄", "year": "2016년", "yearline": "2016년 (16/07)ㆍ13.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 995.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 198.1, "url": "https://www.heydealer.com/market/cars/andKo2yb"}, {"id": "XlX6gmnY", "category": "BMW 5시리즈", "trim": "520d xDrive M에어로다이나믹 (F10)", "year": "2016년", "yearline": "2016년 (16/02)ㆍ10.3만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1535.0, "targetUsd": 9900, "targetManwon": 1324.3, "diffManwon": 210.7, "url": "https://www.heydealer.com/market/cars/XlX6gmnY"}, {"id": "qyLAAmnR", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/05)ㆍ10만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 650.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 221.4, "url": "https://www.heydealer.com/market/cars/qyLAAmnR"}, {"id": "XlX2m8nY", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 익스클루시브 스페셜 7인승", "year": "2015년", "yearline": "2015년 (15/01)ㆍ15만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1020.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 223.1, "url": "https://www.heydealer.com/market/cars/XlX2m8nY"}, {"id": "KlGvP5QO", "category": "현대 투싼", "trim": "디젤 1.7 2WD 모던", "year": "2018년", "yearline": "2018년 (17/06)ㆍ13.1만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 990.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 225.5, "url": "https://www.heydealer.com/market/cars/KlGvP5QO"}, {"id": "VljEpvQG", "category": "기아 스포티지", "trim": "디젤 2WD 프레스티지 (더뉴스포티지R)", "year": "2014년", "yearline": "2014년 (14/10)ㆍ12.9만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 850.0, "targetUsd": 4663, "targetManwon": 623.8, "diffManwon": 226.2, "url": "https://www.heydealer.com/market/cars/VljEpvQG"}, {"id": "EQrz0GQg", "category": "기아 모닝", "trim": "트렌디 (올뉴모닝 JA)", "year": "2019년", "yearline": "2019년 (19/03)ㆍ13.3만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 660.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 231.4, "url": "https://www.heydealer.com/market/cars/EQrz0GQg"}, {"id": "Wnq2wGQL", "category": "기아 모닝", "trim": "프레스티지 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/09)ㆍ11.8만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 660.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 231.4, "url": "https://www.heydealer.com/market/cars/Wnq2wGQL"}, {"id": "JlVqbVQE", "category": "르노코리아 QM6", "trim": "디젤 4WD RE시그니처", "year": "2017년", "yearline": "2017년 (16/12)ㆍ6.8만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1130.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 234.8, "url": "https://www.heydealer.com/market/cars/JlVqbVQE"}, {"id": "myAvJNnp", "category": "BMW 3시리즈", "trim": "320d (F30)", "year": "2016년", "yearline": "2016년 (16/10)ㆍ10.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1345.0, "targetUsd": 8200, "targetManwon": 1096.9, "diffManwon": 248.1, "url": "https://www.heydealer.com/market/cars/myAvJNnp"}, {"id": "Wnq0p7yL", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2018년", "yearline": "2018년 (18/12)ㆍ10.3만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 251.4, "url": "https://www.heydealer.com/market/cars/Wnq0p7yL"}, {"id": "5lOOe2l4", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/02)ㆍ11.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 251.4, "url": "https://www.heydealer.com/market/cars/5lOOe2l4"}, {"id": "eyaW7wQM", "category": "벤츠 C클래스", "trim": "C220d 아방가르드", "year": "2016년", "yearline": "2016년 (16/08)ㆍ10.2만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 1380.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 253.9, "url": "https://www.heydealer.com/market/cars/eyaW7wQM"}], "updatedAt": "2026-09-10 11:45 KST", "snapshotNote": "2026-09-10 기준 헤이딜러 자동 스캔 · 헤이딜러가가 망고 매입가보다 낮은 매물은 자동으로 적극 추천 · 전체 조건 충족 매물은 적극 23대·추천 33대였으며, 그중 가격 경쟁력 상위 적극 10대·추천 30대만 표시"};
+
+const RATE = 1337.7012;
+function fmtManwon(v){ return v.toLocaleString('ko-KR', {maximumFractionDigits:0}); }
+function toUsd(manwon){ return Math.round(manwon*10000/RATE); }
+
+const sortState = { strong: 'gap', normal: 'gap' };
+
+function sortItems(items, mode){
+  const copy = items.slice();
+  if(mode === 'name'){
+    copy.sort((a,b) => {
+      const c = a.category.localeCompare(b.category, 'ko');
+      if(c !== 0) return c;
+      return (a.trim||'').localeCompare(b.trim||'', 'ko');
+    });
+  } else {
+    copy.sort((a,b) => a.diffManwon - b.diffManwon);
+  }
+  return copy;
+}
+
+function rowHtml(item, idx, tier){
+  const priceUsd = toUsd(item.priceManwon);
+  const diffUsd = toUsd(item.diffManwon);
+  const isCheaper = item.diffManwon <= 0;
+  const badgeClass = tier === 'strong' ? 'good' : 'warn';
+  const badgeLabel = isCheaper
+    ? `${Math.abs(diffUsd).toLocaleString('en-US')}\$ 더 저렴`
+    : `+${diffUsd.toLocaleString('en-US')}\$ 차이`;
+  const specs = [];
+  if(item.yearline) specs.push(`<span class="spec">${item.yearline}</span>`);
+  if(item.accident) specs.push(`<span class="spec">${item.accident}</span>`);
+  if(item.eye) specs.push(`<span class="spec eye">eye 인증</span>`);
+  if(item.reserved) specs.push(`<span class="spec reserved">예약 중</span>`);
+  return `
+  <div class="row${isCheaper ? ' cheaper' : ''}">
+    <div class="rank num">${idx+1}</div>
+    <div class="cat">
+      <div class="brand-model">${item.category}</div>
+      <div class="target">목표가 <span class="num">$${item.targetUsd.toLocaleString('en-US')}</span></div>
+    </div>
+    <div class="detail">
+      <div class="trim">${item.trim || ''}</div>
+      <div class="spec-row">${specs.join('')}</div>
+    </div>
+    <div class="price-block">
+      <div class="price-krw num">${fmtManwon(item.priceManwon)}만원</div>
+      <div class="price-usd num">약 $${priceUsd.toLocaleString('en-US')}</div>
+      <div class="gap-badge ${isCheaper ? 'good' : badgeClass}">${badgeLabel}</div>
+    </div>
+    <a class="view-btn" href="${item.url}" target="_blank" rel="noopener noreferrer">매물 보기 →</a>
+  </div>`;
+}
+
+function renderPanel(tier){
+  const items = DATA[tier] || [];
+  const sorted = sortItems(items, sortState[tier]);
+  const listId = tier === 'strong' ? 'listStrong' : 'listNormal';
+  document.getElementById(listId).innerHTML = sorted.map((it,i)=>rowHtml(it,i,tier)).join('');
+}
+
+function render(){
+  document.getElementById('countStrong').textContent = DATA.strong.length;
+  document.getElementById('countNormal').textContent = DATA.normal.length;
+  renderPanel('strong');
+  renderPanel('normal');
+  document.getElementById('updatedAt').textContent = DATA.updatedAt || '-';
+  document.getElementById('snapshotNote').textContent = DATA.snapshotNote || '';
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    btn.setAttribute('aria-selected','true');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('.sort-group').forEach(group=>{
+  const tier = group.dataset.panel;
+  group.querySelectorAll('.sort-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      sortState[tier] = btn.dataset.sort;
+      group.querySelectorAll('.sort-btn').forEach(b=>b.setAttribute('aria-pressed', b===btn ? 'true' : 'false'));
+      renderPanel(tier);
+    });
+  });
+});
+
+render();
+</script>
+</body>
+</html>
