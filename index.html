@@ -1,299 +1,429 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>헤이딜러 매입 후보</title>
-<meta name="description" content="망고카 최근 2개월 매입 데이터 기반, 헤이딜러 유사 매물 자동 추천 (매일 아침 갱신)">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>망고카 주간 매입판매 현황</title>
 <style>
-  :root{
+  .viz-root {
     color-scheme: light;
-    --bg:#f6f4ef;
-    --surface:#ffffff;
-    --surface-alt:#efeae0;
-    --border:#e2dccd;
-    --text:#211d17;
-    --text-muted:#75705f;
-    --accent:#2d3a5c;
-    --accent-soft:#e4e8f2;
-    --accent-ink:#ffffff;
-    --good:#396b4c;
-    --good-soft:#dfeee3;
-    --warn:#93641d;
-    --warn-soft:#f5e8cd;
-    --bad:#9a3f36;
-    --bad-soft:#f6e0dc;
-    --shadow: 0 1px 2px rgba(33,29,23,0.04), 0 8px 24px -12px rgba(33,29,23,0.12);
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --grid:           #e1e0d9;
+    --baseline:       #c3c2b7;
+    --series-1:       #2a78d6; /* 매입 */
+    --series-2:       #eb6834; /* 판매 */
+    --pos:            #2a78d6; /* 순수익 (+) */
+    --neg:            #e34948; /* 순수익 (-) */
+    --border:         rgba(11,11,11,0.10);
+    --tile-bg:        #ffffff;
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --bg:#14161b;
-      --surface:#1b1e25;
-      --surface-alt:#22252d;
-      --border:#2d313b;
-      --text:#ece9e1;
-      --text-muted:#9a978d;
-      --accent:#7688b8;
-      --accent-soft:#242c40;
-      --accent-ink:#0f1117;
-      --good:#6bbf8e;
-      --good-soft:#1c2f24;
-      --warn:#dcac52;
-      --warn-soft:#332a16;
-      --bad:#e08277;
-      --bad-soft:#33201d;
-      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --grid:           #2c2c2a;
+      --baseline:       #383835;
+      --series-1:       #3987e5;
+      --series-2:       #d95926;
+      --pos:            #3987e5;
+      --neg:            #e66767;
+      --border:         rgba(255,255,255,0.10);
+      --tile-bg:        #232322;
     }
   }
-  :root[data-theme="dark"]{
-    --bg:#14161b;
-    --surface:#1b1e25;
-    --surface-alt:#22252d;
-    --border:#2d313b;
-    --text:#ece9e1;
-    --text-muted:#9a978d;
-    --accent:#7688b8;
-    --accent-soft:#242c40;
-    --accent-ink:#0f1117;
-    --good:#6bbf8e;
-    --good-soft:#1c2f24;
-    --warn:#dcac52;
-    --warn-soft:#332a16;
-    --bad:#e08277;
-    --bad-soft:#33201d;
-    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;background:var(--bg);}
-  body{color:var(--text);font-family:"IBM Plex Sans KR","Pretendard",-apple-system,sans-serif;line-height:1.5;}
-  img{max-width:100%;}
-  .num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums;}
-  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px;}
-  header.top{display:flex;flex-wrap:wrap;gap:16px 32px;align-items:flex-end;justify-content:space-between;padding-bottom:24px;margin-bottom:20px;border-bottom:1px solid var(--border);}
-  .title-block h1{font-family:"Sora",sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.01em;margin:0 0 6px;text-wrap:balance;}
-  .title-block p{margin:0;color:var(--text-muted);font-size:13.5px;max-width:64ch;}
-  .meta-chips{display:flex;gap:8px;flex-wrap:wrap;}
-  .chip{background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:6px;box-shadow:var(--shadow);}
-  .chip b{color:var(--text);font-weight:600;}
-  .chip .num{color:var(--accent);font-weight:600;}
-
-  .rule-box{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:14px;box-shadow:var(--shadow);font-size:12.5px;color:var(--text-muted);display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-  .rule-box .rule{padding-left:12px;border-left:2px solid var(--accent-soft);}
-  .rule-box .rule b{display:block;color:var(--text);font-size:13px;margin-bottom:2px;}
-  .rule-box .rule.highlight{border-left-color:var(--good);}
-  @media (max-width:760px){.rule-box{grid-template-columns:1fr;}}
-
-  .snapshot-note{font-size:11.5px;color:var(--text-muted);background:var(--accent-soft);border:1px solid var(--border);border-radius:10px;padding:8px 12px;margin-bottom:20px;}
-
-  .tabs{display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid var(--border);overflow-x:auto;}
-  .tab-btn{appearance:none;border:none;background:none;cursor:pointer;font-family:"IBM Plex Sans KR",sans-serif;font-size:14.5px;font-weight:600;color:var(--text-muted);padding:10px 6px 12px;border-bottom:2.5px solid transparent;display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;}
-  .tab-btn .count{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;background:var(--surface-alt);color:var(--text-muted);border-radius:999px;padding:2px 8px;}
-  .tab-btn[aria-selected="true"]{color:var(--text);border-bottom-color:var(--accent);}
-  .tab-btn[aria-selected="true"] .count{background:var(--accent);color:var(--accent-ink);}
-  .tab-btn .tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:0.02em;}
-  .tab-btn.strong .tag{background:var(--good-soft);color:var(--good);}
-  .tab-btn.normal .tag{background:var(--warn-soft);color:var(--warn);}
-
-  .tab-panel{display:none;}
-  .tab-panel.active{display:block;}
-  .panel-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:0 0 14px;}
-  .tab-desc{font-size:12.5px;color:var(--text-muted);margin:0;}
-
-  .sort-group{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-muted);flex-shrink:0;}
-  .sort-group .sort-label{margin-right:2px;}
-  .sort-btn{appearance:none;cursor:pointer;background:var(--surface);border:1px solid var(--border);color:var(--text-muted);font-family:inherit;font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;transition:background .15s ease,color .15s ease;}
-  .sort-btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);}
-
-  .list{display:flex;flex-direction:column;gap:8px;}
-  .row{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);display:grid;grid-template-columns:28px 1.4fr 1.6fr auto auto;gap:14px;align-items:center;}
-  .row .rank{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--text-muted);text-align:center;}
-  .row .cat{display:flex;flex-direction:column;gap:2px;min-width:0;}
-  .row .cat .brand-model{font-weight:600;font-size:14px;}
-  .row .cat .target{font-size:11px;color:var(--text-muted);}
-  .row .detail{display:flex;flex-direction:column;gap:4px;min-width:0;}
-  .row .detail .trim{font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .row .spec-row{display:flex;gap:5px;flex-wrap:wrap;}
-  .spec{background:var(--surface-alt);border-radius:7px;padding:2px 7px;font-size:10.5px;color:var(--text-muted);white-space:nowrap;}
-  .spec.eye{color:var(--accent);}
-  .spec.reserved{background:var(--bad-soft);color:var(--bad);}
-  .row .price-block{text-align:right;display:flex;flex-direction:column;gap:2px;}
-  .row .price-block .price-krw{font-family:"Sora",sans-serif;font-weight:700;font-size:16px;white-space:nowrap;}
-  .row .price-block .price-usd{font-size:10.5px;color:var(--text-muted);}
-  .gap-badge{font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:8px;white-space:nowrap;justify-self:end;}
-  .gap-badge.good{background:var(--good-soft);color:var(--good);}
-  .gap-badge.warn{background:var(--warn-soft);color:var(--warn);}
-  .row.cheaper{border-color:var(--good);}
-  a.view-btn{display:flex;align-items:center;justify-content:center;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:9px;white-space:nowrap;transition:opacity .15s ease;}
-  a.view-btn:hover{opacity:0.88;}
-  a.view-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
-
-  @media (max-width:820px){
-    .row{grid-template-columns:1fr;grid-template-areas:"cat" "detail" "price" "link";}
-    .row .rank{display:none;}
-    .row .price-block{text-align:left;flex-direction:row;justify-content:space-between;align-items:center;}
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-1:      #1a1a19;
+    --page:           #0d0d0d;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --grid:           #2c2c2a;
+    --baseline:       #383835;
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --pos:            #3987e5;
+    --neg:            #e66767;
+    --border:         rgba(255,255,255,0.10);
+    --tile-bg:        #232322;
   }
 
-  footer{margin-top:40px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:6px;}
+  * { box-sizing: border-box; }
+  .viz-root {
+    background: var(--page);
+    color: var(--text-primary);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    padding: 24px 16px 48px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 700; margin: 0 0 4px; }
+  .subtitle { color: var(--text-secondary); font-size: 13px; margin: 0 0 20px; }
+  .note { color: var(--text-muted); font-size: 12px; line-height: 1.6; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 700px) {
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+  .tile {
+    background: var(--tile-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 14px;
+  }
+  .tile .label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .tile .value { font-size: 22px; font-weight: 700; }
+  .tile .value.pos { color: var(--pos); }
+  .tile .sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+  .panel {
+    background: var(--tile-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 16px 8px;
+    margin-bottom: 20px;
+  }
+  .panel h2 { font-size: 14px; font-weight: 700; margin: 0 0 2px; }
+  .panel .panel-sub { font-size: 12px; color: var(--text-secondary); margin: 0 0 12px; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  .scroll-x { overflow-x: auto; padding-bottom: 6px; }
+  .chart-svg-wrap { position: relative; }
+
+  .tooltip {
+    position: fixed;
+    pointer-events: none;
+    background: var(--text-primary);
+    color: var(--surface-1);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 8px 10px;
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    opacity: 0;
+    transform: translate(-50%, -100%);
+    transition: opacity 0.08s ease;
+    z-index: 50;
+    white-space: nowrap;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip b { font-weight: 700; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  thead th {
+    position: sticky; top: 0;
+    background: var(--tile-bg);
+    text-align: right;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    font-variant-numeric: tabular-nums;
+  }
+  thead th:first-child, tbody td:first-child { text-align: left; }
+  tbody td {
+    text-align: right;
+    padding: 7px 10px;
+    border-bottom: 1px solid var(--grid);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: color-mix(in srgb, var(--series-1) 6%, transparent); }
+  .table-scroll { max-height: 480px; overflow-y: auto; border-radius: 6px; }
+  .profit-pos { color: var(--pos); }
+  .profit-neg { color: var(--neg); }
+  .foot-star { color: var(--text-muted); }
+
+  footer.notes { margin-top: 4px; }
+  footer.notes ul { margin: 6px 0 0; padding-left: 18px; }
+  footer.notes li { margin-bottom: 3px; }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <div class="title-block">
-      <h1>헤이딜러 매입 후보</h1>
-      <p>망고카 최근 2개월(2026년 7~8월) 매입 데이터 상위 20개 모델 기준, 헤이딜러 재고 매물을 가격 경쟁력에 따라 <b>적극 추천</b> / <b>추천</b> 두 단계로 나눠 리스트 형태로 보여줍니다.</p>
-    </div>
-    <div class="meta-chips">
-      <span class="chip">갱신 <b id="updatedAt">-</b></span>
-      <span class="chip">환율 <span class="num">1,337.70</span>원/$</span>
-      <span class="chip">대상 모델 <span class="num">20</span>개</span>
-    </div>
-  </header>
 
-  <div class="rule-box">
-    <div class="rule highlight"><b>즉시 적극 추천</b>헤이딜러 광고가가 망고 매입가보다 낮은 매물 (가격차 마이너스)</div>
-    <div class="rule"><b>가격 밴드 (적극 추천)</b>목표가 5,000불 이하 → ±500불 / 초과 → ±1,000불 이내</div>
-    <div class="rule"><b>추천 범위</b>밴드를 벗어나지만 목표가와 2,000불 미만 차이</div>
-    <div class="rule"><b>제외 기준</b>목표가와 2,000불 이상 차이나는 매물은 표시하지 않음</div>
-  </div>
+<div class="viz-root">
+  <div class="wrap">
+    <h1>망고카 주간 매입 · 판매 현황</h1>
+    <p class="subtitle">2025-08-25 ~ 2026-09-13 (총 55주) · 「월별판매현황」 시트 기준, 매입일자 / 매도일자(또는 입금일자) 기준 주별 집계</p>
 
-  <div class="snapshot-note" id="snapshotNote"></div>
-
-  <div class="tabs" role="tablist">
-    <button class="tab-btn strong" role="tab" aria-selected="true" data-tab="strong">
-      <span class="tag">적극 추천</span> 적극 추천 차량 <span class="count" id="countStrong">0</span>
-    </button>
-    <button class="tab-btn normal" role="tab" aria-selected="false" data-tab="normal">
-      <span class="tag">추천</span> 추천 차량 <span class="count" id="countNormal">0</span>
-    </button>
-  </div>
-
-  <div class="tab-panel active" id="panel-strong">
-    <div class="panel-head">
-      <p class="tab-desc">헤이딜러가 망고 매입가보다 낮은 매물, 또는 밴드(±500~1,000불) 이내 매물 중 가장 경쟁력 있는 순으로 최대 10대입니다.</p>
-      <div class="sort-group" data-panel="strong">
-        <span class="sort-label">정렬</span>
-        <button class="sort-btn" data-sort="gap" aria-pressed="true">가격차 순</button>
-        <button class="sort-btn" data-sort="name" aria-pressed="false">차량 이름순</button>
+    <div class="tiles">
+      <div class="tile">
+        <div class="label">총 매입 대수</div>
+        <div class="value" id="tile-buy">-</div>
+        <div class="sub" id="tile-buy-amt">-</div>
+      </div>
+      <div class="tile">
+        <div class="label">총 판매 대수</div>
+        <div class="value" id="tile-sell">-</div>
+        <div class="sub" id="tile-sell-amt">-</div>
+      </div>
+      <div class="tile">
+        <div class="label">누적 순수익</div>
+        <div class="value pos" id="tile-profit">-</div>
+        <div class="sub" id="tile-margin">-</div>
+      </div>
+      <div class="tile">
+        <div class="label">주당 평균</div>
+        <div class="value" id="tile-avg">-</div>
+        <div class="sub">매입 / 판매 대수</div>
       </div>
     </div>
-    <div class="list" id="listStrong"></div>
-  </div>
-  <div class="tab-panel" id="panel-normal">
-    <div class="panel-head">
-      <p class="tab-desc">밴드를 벗어났지만 목표가와 2,000불 미만 차이로, 매입을 검토해볼 만한 매물 최대 30대입니다.</p>
-      <div class="sort-group" data-panel="normal">
-        <span class="sort-label">정렬</span>
-        <button class="sort-btn" data-sort="gap" aria-pressed="true">가격차 순</button>
-        <button class="sort-btn" data-sort="name" aria-pressed="false">차량 이름순</button>
+
+    <div class="panel">
+      <h2>주별 매입 · 판매 대수</h2>
+      <p class="panel-sub">대(臺) 단위, 주 시작일(월요일) 기준</p>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>매입 대수</span>
+        <span class="legend-item"><span class="swatch" style="background:var(--series-2)"></span>판매 대수</span>
+      </div>
+      <div class="scroll-x">
+        <div class="chart-svg-wrap" id="chart1-wrap"></div>
       </div>
     </div>
-    <div class="list" id="listNormal"></div>
-  </div>
 
-  <footer>
-    <div>가격은 헤이딜러 인증 소비자 판매가 기준(할인 적용가)이며, 망고카 실제 매입 단가와는 차이가 있을 수 있습니다.</div>
-    <div>전체 20개 모델의 로드된 매물을 모두 스캔한 뒤, 가격 경쟁력(헤이딜러가 − 망고 매입가) 기준으로 정렬해 상위 항목만 보여줍니다.</div>
-    <div>매일 오전 9시(KST) 20개 모델 재조회 → 등급/정렬 재적용 → 이 페이지 자동 갱신.</div>
-  </footer>
+    <div class="panel">
+      <h2>주별 순수익</h2>
+      <p class="panel-sub">판매금액 − 총 매입원가(부대비용 포함) 기준, 원(₩)</p>
+      <div class="scroll-x">
+        <div class="chart-svg-wrap" id="chart2-wrap"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>주별 상세 표</h2>
+      <p class="panel-sub">스크롤하여 전체 55주 확인 가능</p>
+      <div class="table-scroll">
+        <table id="data-table">
+          <thead>
+            <tr>
+              <th>주(기간)</th>
+              <th>매입 대수</th>
+              <th>판매 대수</th>
+              <th>순수익(원)</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer class="notes">
+      <p class="note">※ 데이터 산출 기준 및 참고사항</p>
+      <ul class="note">
+        <li>매입 대수는 「월별판매현황」 시트의 <b>매입일자</b> 기준, 판매 대수·순수익은 <b>매도일자</b>(없는 경우 입금일자) 기준으로 주(월~일)별 집계했습니다.</li>
+        <li>순수익 = 매도금액 − 총 차대금(계약매입금액 + 알선수수료 + 취득세 + 성능비 등 부대경비 합계).</li>
+        <li>계약 취소/환불 처리된 <b>7건</b>은 매입 대수에서 제외했습니다.</li>
+        <li>1건(BMW520d, 397수1388)은 원본 파일의 매도금액 셀이 손상되어("2/2+Y60:AG60") 값을 확인할 수 없어 판매 대수에는 포함하되 순수익 계산에서는 제외했습니다.</li>
+        <li>원본 데이터 중 일부 날짜(5건)는 "2026년 12월"로 입력되어 있으나 문맥상(전월 입금일 등과의 비교) 2025년 12월의 오기로 판단되어 2025년으로 보정했습니다.</li>
+        <li>차량 1대(폴로, 14오0767)는 매입일자가 비어 있어 「26년9월09일」 일일업무현황 시트의 현금출납 내역("9/3 김경록-폴로(14오0767) 차량매입대금")을 참고해 9/3로 보완했습니다.</li>
+        <li>거래내역_28004(이전비)·27304(운영비) 계좌 파일은 2026-09-09 하루치 은행 거래내역으로, 해당 일자 일일업무현황 검증용 자료이며 이번 주별 집계에는 직접 반영하지 않았습니다.</li>
+      </ul>
+    </footer>
+  </div>
 </div>
 
+<div class="tooltip" id="tooltip"></div>
+
 <script>
-const DATA = {"strong": [{"id": "Wnqe0qnL", "category": "벤츠 GLC클래스", "trim": "GLC220d 4MATIC", "year": "2016년", "yearline": "2016년 (16/02)ㆍ12.9만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1820.0, "targetUsd": 15500, "targetManwon": 2073.4, "diffManwon": -253.4, "url": "https://www.heydealer.com/market/cars/Wnqe0qnL"}, {"id": "qyLXBRyR", "category": "아우디 A6", "trim": "3.0 TDI 콰트로 (C7)", "year": "2013년", "yearline": "2013년 (13/05)ㆍ13.4만km", "accident": "무사고", "eye": false, "reserved": true, "priceManwon": 850.0, "targetUsd": 8228, "targetManwon": 1100.7, "diffManwon": -250.7, "url": "https://www.heydealer.com/market/cars/qyLXBRyR"}, {"id": "BQ4wYWnR", "category": "BMW 5시리즈", "trim": "520d 럭셔리 (F10)", "year": "2014년", "yearline": "2014년 (14/01)ㆍ13.2만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1090.0, "targetUsd": 9900, "targetManwon": 1324.3, "diffManwon": -234.3, "url": "https://www.heydealer.com/market/cars/BQ4wYWnR"}, {"id": "XlX4p1lY", "category": "벤츠 GLC클래스", "trim": "GLC220d 4MATIC", "year": "2017년", "yearline": "2017년 (17/06)ㆍ16.6만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1890.0, "targetUsd": 15500, "targetManwon": 2073.4, "diffManwon": -183.4, "url": "https://www.heydealer.com/market/cars/XlX4p1lY"}, {"id": "WnqErqnL", "category": "르노코리아 QM6", "trim": "디젤 2WD RE시그니처", "year": "2017년", "yearline": "2017년 (17/11)ㆍ9.4만km", "accident": "무사고", "eye": true, "reserved": true, "priceManwon": 890.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": -5.2, "url": "https://www.heydealer.com/market/cars/WnqErqnL"}, {"id": "VljEj3QG", "category": "현대 투싼", "trim": "디젤 1.7 2WD 스타일", "year": "2016년", "yearline": "2016년 (15/11)ㆍ14.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 780.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 15.5, "url": "https://www.heydealer.com/market/cars/VljEj3QG"}, {"id": "Glx7YpQr", "category": "현대 투싼", "trim": "디젤(e-VGT) 2WD 스마트 스페셜", "year": "2014년", "yearline": "2014년 (13/06)ㆍ11.9만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 790.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 25.5, "url": "https://www.heydealer.com/market/cars/Glx7YpQr"}, {"id": "bQ9OEoy3", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄 7인승", "year": "2013년", "yearline": "2013년 (13/05)ㆍ12만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 830.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 33.1, "url": "https://www.heydealer.com/market/cars/bQ9OEoy3"}, {"id": "dnKo5ono", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄", "year": "2015년", "yearline": "2015년 (14/03)ㆍ14.7만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 830.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 33.1, "url": "https://www.heydealer.com/market/cars/dnKo5ono"}, {"id": "dnKjROyo", "category": "르노코리아 QM6", "trim": "디젤 2WD RE", "year": "2018년", "yearline": "2018년 (18/04)ㆍ12.9만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 950.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 54.8, "url": "https://www.heydealer.com/market/cars/dnKjROyo"}], "normal": [{"id": "gQ6o8Kl0", "category": "르노코리아 QM3", "trim": "QM3", "year": "2016년", "yearline": "2016년 (16/04)ㆍ10.9만km", "accident": "완전무사고", "eye": true, "reserved": true, "priceManwon": 590.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 91.3, "url": "https://www.heydealer.com/market/cars/gQ6o8Kl0"}, {"id": "znExW1yq", "category": "르노코리아 QM3", "trim": "QM3", "year": "2016년", "yearline": "2016년 (16/08)ㆍ5.5만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 630.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 131.3, "url": "https://www.heydealer.com/market/cars/znExW1yq"}, {"id": "2yMJ48nW", "category": "벤츠 C클래스", "trim": "C220d 아방가르드", "year": "2016년", "yearline": "2016년 (15/08)ㆍ12.6만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 1260.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 133.9, "url": "https://www.heydealer.com/market/cars/2yMJ48nW"}, {"id": "myAxODlp", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/04)ㆍ16.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 570.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 141.4, "url": "https://www.heydealer.com/market/cars/myAxODlp"}, {"id": "XlXeWOyY", "category": "르노코리아 QM3", "trim": "QM3", "year": "2015년", "yearline": "2015년 (15/09)ㆍ8.8만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 650.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 151.3, "url": "https://www.heydealer.com/market/cars/XlXeWOyY"}, {"id": "Yn300VQp", "category": "르노코리아 QM6", "trim": "디젤 4WD RE시그니처", "year": "2017년", "yearline": "2017년 (17/05)ㆍ14.2만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1050.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 154.8, "url": "https://www.heydealer.com/market/cars/Yn300VQp"}, {"id": "7yBmeXlE", "category": "현대 투싼", "trim": "디젤(e-VGT) 2WD 스마트 스페셜", "year": "2014년", "yearline": "2014년 (13/05)ㆍ5.7만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 920.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 155.5, "url": "https://www.heydealer.com/market/cars/7yBmeXlE"}, {"id": "pnW6kjy1", "category": "르노코리아 QM3", "trim": "QM3", "year": "2017년", "yearline": "2017년 (17/06)ㆍ10.2만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 660.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 161.3, "url": "https://www.heydealer.com/market/cars/pnW6kjy1"}, {"id": "KlG7POlO", "category": "벤츠 C클래스", "trim": "C220 블루텍 아방가르드", "year": "2015년", "yearline": "2015년 (14/07)ㆍ9.7만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1290.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 163.9, "url": "https://www.heydealer.com/market/cars/KlG7POlO"}, {"id": "plRJ2jlb", "category": "르노코리아 QM3", "trim": "QM3", "year": "2014년", "yearline": "2014년 (14/05)ㆍ9.1만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 670.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 171.3, "url": "https://www.heydealer.com/market/cars/plRJ2jlb"}, {"id": "qyLkmmlR", "category": "르노코리아 QM3", "trim": "QM3", "year": "2017년", "yearline": "2017년 (17/03)ㆍ12.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 670.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 171.3, "url": "https://www.heydealer.com/market/cars/qyLkmmlR"}, {"id": "Wnq9OmnL", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄", "year": "2014년", "yearline": "2014년 (13/08)ㆍ12만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 970.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 173.1, "url": "https://www.heydealer.com/market/cars/Wnq9OmnL"}, {"id": "knvE3jyJ", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 익스클루시브", "year": "2014년", "yearline": "2014년 (14/01)ㆍ11.5만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 970.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 173.1, "url": "https://www.heydealer.com/market/cars/knvE3jyJ"}, {"id": "gQzppwyK", "category": "르노코리아 QM3", "trim": "QM3", "year": "2015년", "yearline": "2015년 (14/11)ㆍ5.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3728, "targetManwon": 498.7, "diffManwon": 181.3, "url": "https://www.heydealer.com/market/cars/gQzppwyK"}, {"id": "wn2GoDQm", "category": "BMW 3시리즈", "trim": "320d (F30)", "year": "2017년", "yearline": "2017년 (17/05)ㆍ12.5만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 1285.0, "targetUsd": 8200, "targetManwon": 1096.9, "diffManwon": 188.1, "url": "https://www.heydealer.com/market/cars/wn2GoDQm"}, {"id": "KlGv5OQO", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 프리미엄 7인승", "year": "2015년", "yearline": "2015년 (15/03)ㆍ9.3만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 990.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 193.1, "url": "https://www.heydealer.com/market/cars/KlGv5OQO"}, {"id": "BQ484LQR", "category": "벤츠 C클래스", "trim": "C200d", "year": "2016년", "yearline": "2016년 (16/08)ㆍ8.1만km", "accident": "완전무사고", "eye": false, "reserved": false, "priceManwon": 1320.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 193.9, "url": "https://www.heydealer.com/market/cars/BQ484LQR"}, {"id": "andKo2yb", "category": "현대 싼타페", "trim": "디젤 2.0 2WD 프리미엄", "year": "2016년", "yearline": "2016년 (16/07)ㆍ13.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 995.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 198.1, "url": "https://www.heydealer.com/market/cars/andKo2yb"}, {"id": "XlX6gmnY", "category": "BMW 5시리즈", "trim": "520d xDrive M에어로다이나믹 (F10)", "year": "2016년", "yearline": "2016년 (16/02)ㆍ10.3만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1535.0, "targetUsd": 9900, "targetManwon": 1324.3, "diffManwon": 210.7, "url": "https://www.heydealer.com/market/cars/XlX6gmnY"}, {"id": "qyLAAmnR", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/05)ㆍ10만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 650.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 221.4, "url": "https://www.heydealer.com/market/cars/qyLAAmnR"}, {"id": "XlX2m8nY", "category": "현대 싼타페", "trim": "디젤(e-VGT) 2.0 2WD 익스클루시브 스페셜 7인승", "year": "2015년", "yearline": "2015년 (15/01)ㆍ15만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1020.0, "targetUsd": 5957, "targetManwon": 796.9, "diffManwon": 223.1, "url": "https://www.heydealer.com/market/cars/XlX2m8nY"}, {"id": "KlGvP5QO", "category": "현대 투싼", "trim": "디젤 1.7 2WD 모던", "year": "2018년", "yearline": "2018년 (17/06)ㆍ13.1만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 990.0, "targetUsd": 5715, "targetManwon": 764.5, "diffManwon": 225.5, "url": "https://www.heydealer.com/market/cars/KlGvP5QO"}, {"id": "VljEpvQG", "category": "기아 스포티지", "trim": "디젤 2WD 프레스티지 (더뉴스포티지R)", "year": "2014년", "yearline": "2014년 (14/10)ㆍ12.9만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 850.0, "targetUsd": 4663, "targetManwon": 623.8, "diffManwon": 226.2, "url": "https://www.heydealer.com/market/cars/VljEpvQG"}, {"id": "EQrz0GQg", "category": "기아 모닝", "trim": "트렌디 (올뉴모닝 JA)", "year": "2019년", "yearline": "2019년 (19/03)ㆍ13.3만km", "accident": "완전무사고", "eye": true, "reserved": false, "priceManwon": 660.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 231.4, "url": "https://www.heydealer.com/market/cars/EQrz0GQg"}, {"id": "Wnq2wGQL", "category": "기아 모닝", "trim": "프레스티지 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/09)ㆍ11.8만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 660.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 231.4, "url": "https://www.heydealer.com/market/cars/Wnq2wGQL"}, {"id": "JlVqbVQE", "category": "르노코리아 QM6", "trim": "디젤 4WD RE시그니처", "year": "2017년", "yearline": "2017년 (16/12)ㆍ6.8만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1130.0, "targetUsd": 6692, "targetManwon": 895.2, "diffManwon": 234.8, "url": "https://www.heydealer.com/market/cars/JlVqbVQE"}, {"id": "myAvJNnp", "category": "BMW 3시리즈", "trim": "320d (F30)", "year": "2016년", "yearline": "2016년 (16/10)ㆍ10.1만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 1345.0, "targetUsd": 8200, "targetManwon": 1096.9, "diffManwon": 248.1, "url": "https://www.heydealer.com/market/cars/myAvJNnp"}, {"id": "Wnq0p7yL", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2018년", "yearline": "2018년 (18/12)ㆍ10.3만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 251.4, "url": "https://www.heydealer.com/market/cars/Wnq0p7yL"}, {"id": "5lOOe2l4", "category": "기아 모닝", "trim": "럭셔리 (올뉴모닝 JA)", "year": "2017년", "yearline": "2017년 (17/02)ㆍ11.4만km", "accident": "무사고", "eye": true, "reserved": false, "priceManwon": 680.0, "targetUsd": 3204, "targetManwon": 428.6, "diffManwon": 251.4, "url": "https://www.heydealer.com/market/cars/5lOOe2l4"}, {"id": "eyaW7wQM", "category": "벤츠 C클래스", "trim": "C220d 아방가르드", "year": "2016년", "yearline": "2016년 (16/08)ㆍ10.2만km", "accident": "무사고", "eye": false, "reserved": false, "priceManwon": 1380.0, "targetUsd": 8418, "targetManwon": 1126.1, "diffManwon": 253.9, "url": "https://www.heydealer.com/market/cars/eyaW7wQM"}], "updatedAt": "2026-09-10 11:45 KST", "snapshotNote": "2026-09-10 기준 헤이딜러 자동 스캔 · 헤이딜러가가 망고 매입가보다 낮은 매물은 자동으로 적극 추천 · 전체 조건 충족 매물은 적극 23대·추천 33대였으며, 그중 가격 경쟁력 상위 적극 10대·추천 30대만 표시"};
+const DATA = {"weeks":[{"week_start":"2025-08-25","week_end":"2025-08-31","label":"8/25~8/31","buy_count":1,"buy_amt":7994450,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-01","week_end":"2025-09-07","label":"9/1~9/7","buy_count":1,"buy_amt":4308350,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-08","week_end":"2025-09-14","label":"9/8~9/14","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-15","week_end":"2025-09-21","label":"9/15~9/21","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-22","week_end":"2025-09-28","label":"9/22~9/28","buy_count":1,"buy_amt":25748780,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-29","week_end":"2025-10-05","label":"9/29~10/5","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-06","week_end":"2025-10-12","label":"10/6~10/12","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-13","week_end":"2025-10-19","label":"10/13~10/19","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-20","week_end":"2025-10-26","label":"10/20~10/26","buy_count":3,"buy_amt":38136930,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-27","week_end":"2025-11-02","label":"10/27~11/2","buy_count":2,"buy_amt":26780490,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-03","week_end":"2025-11-09","label":"11/3~11/9","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-10","week_end":"2025-11-16","label":"11/10~11/16","buy_count":1,"buy_amt":6708336,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-17","week_end":"2025-11-23","label":"11/17~11/23","buy_count":2,"buy_amt":78880950,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-24","week_end":"2025-11-30","label":"11/24~11/30","buy_count":3,"buy_amt":69037490,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-01","week_end":"2025-12-07","label":"12/1~12/7","buy_count":5,"buy_amt":45037510,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-08","week_end":"2025-12-14","label":"12/8~12/14","buy_count":8,"buy_amt":58321860,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-15","week_end":"2025-12-21","label":"12/15~12/21","buy_count":5,"buy_amt":43117260,"sell_count":4,"sell_revenue":40800000,"sell_cost":35989520,"profit":4810480,"unknown_profit_count":0},{"week_start":"2025-12-22","week_end":"2025-12-28","label":"12/22~12/28","buy_count":7,"buy_amt":56710641,"sell_count":6,"sell_revenue":61240000,"sell_cost":56667850,"profit":4572150,"unknown_profit_count":0},{"week_start":"2025-12-29","week_end":"2026-01-04","label":"12/29~1/4","buy_count":11,"buy_amt":210381309,"sell_count":4,"sell_revenue":46900000,"sell_cost":45497610,"profit":1402390,"unknown_profit_count":0},{"week_start":"2026-01-05","week_end":"2026-01-11","label":"1/5~1/11","buy_count":8,"buy_amt":222491261,"sell_count":7,"sell_revenue":291914440,"sell_cost":289970390,"profit":1944050,"unknown_profit_count":0},{"week_start":"2026-01-12","week_end":"2026-01-18","label":"1/12~1/18","buy_count":8,"buy_amt":91288234,"sell_count":8,"sell_revenue":92540000,"sell_cost":87695990,"profit":4844010,"unknown_profit_count":0},{"week_start":"2026-01-19","week_end":"2026-01-25","label":"1/19~1/25","buy_count":6,"buy_amt":96615277,"sell_count":3,"sell_revenue":38990000,"sell_cost":35811214,"profit":3178786,"unknown_profit_count":0},{"week_start":"2026-01-26","week_end":"2026-02-01","label":"1/26~2/1","buy_count":17,"buy_amt":210501234,"sell_count":9,"sell_revenue":91340000,"sell_cost":81672175,"profit":9667825,"unknown_profit_count":0},{"week_start":"2026-02-02","week_end":"2026-02-08","label":"2/2~2/8","buy_count":7,"buy_amt":146615350,"sell_count":11,"sell_revenue":93200000,"sell_cost":83147261,"profit":10052739,"unknown_profit_count":1},{"week_start":"2026-02-09","week_end":"2026-02-15","label":"2/9~2/15","buy_count":16,"buy_amt":170025653,"sell_count":10,"sell_revenue":189169900,"sell_cost":180870645,"profit":8299255,"unknown_profit_count":0},{"week_start":"2026-02-16","week_end":"2026-02-22","label":"2/16~2/22","buy_count":4,"buy_amt":37377320,"sell_count":6,"sell_revenue":86400000,"sell_cost":81910580,"profit":4489420,"unknown_profit_count":0},{"week_start":"2026-02-23","week_end":"2026-03-01","label":"2/23~3/1","buy_count":13,"buy_amt":113341341,"sell_count":8,"sell_revenue":71300000,"sell_cost":61911374,"profit":9388626,"unknown_profit_count":0},{"week_start":"2026-03-02","week_end":"2026-03-08","label":"3/2~3/8","buy_count":10,"buy_amt":75840051,"sell_count":8,"sell_revenue":90750000,"sell_cost":82465446,"profit":8284554,"unknown_profit_count":0},{"week_start":"2026-03-09","week_end":"2026-03-15","label":"3/9~3/15","buy_count":16,"buy_amt":307429513,"sell_count":13,"sell_revenue":149490000,"sell_cost":139997080,"profit":9492920,"unknown_profit_count":0},{"week_start":"2026-03-16","week_end":"2026-03-22","label":"3/16~3/22","buy_count":21,"buy_amt":426211785,"sell_count":17,"sell_revenue":512813780,"sell_cost":495580251,"profit":17233529,"unknown_profit_count":0},{"week_start":"2026-03-23","week_end":"2026-03-29","label":"3/23~3/29","buy_count":11,"buy_amt":109896337,"sell_count":11,"sell_revenue":224540000,"sell_cost":224724373,"profit":-184373,"unknown_profit_count":0},{"week_start":"2026-03-30","week_end":"2026-04-05","label":"3/30~4/5","buy_count":12,"buy_amt":97593731,"sell_count":8,"sell_revenue":83900000,"sell_cost":75774500,"profit":8125500,"unknown_profit_count":0},{"week_start":"2026-04-06","week_end":"2026-04-12","label":"4/6~4/12","buy_count":16,"buy_amt":316078087,"sell_count":16,"sell_revenue":158000000,"sell_cost":147632535,"profit":10367465,"unknown_profit_count":0},{"week_start":"2026-04-13","week_end":"2026-04-19","label":"4/13~4/19","buy_count":12,"buy_amt":251616101,"sell_count":15,"sell_revenue":295407380,"sell_cost":282572361,"profit":12835019,"unknown_profit_count":0},{"week_start":"2026-04-20","week_end":"2026-04-26","label":"4/20~4/26","buy_count":9,"buy_amt":80965210,"sell_count":11,"sell_revenue":203642000,"sell_cost":193661364,"profit":9980636,"unknown_profit_count":0},{"week_start":"2026-04-27","week_end":"2026-05-03","label":"4/27~5/3","buy_count":5,"buy_amt":101524730,"sell_count":13,"sell_revenue":235676040,"sell_cost":237470682,"profit":-1794642,"unknown_profit_count":0},{"week_start":"2026-05-04","week_end":"2026-05-10","label":"5/4~5/10","buy_count":5,"buy_amt":64133890,"sell_count":5,"sell_revenue":89100000,"sell_cost":84576150,"profit":4523850,"unknown_profit_count":0},{"week_start":"2026-05-11","week_end":"2026-05-17","label":"5/11~5/17","buy_count":6,"buy_amt":56536310,"sell_count":19,"sell_revenue":238200000,"sell_cost":222484468,"profit":15715532,"unknown_profit_count":0},{"week_start":"2026-05-18","week_end":"2026-05-24","label":"5/18~5/24","buy_count":10,"buy_amt":141369780,"sell_count":15,"sell_revenue":133950000,"sell_cost":132526971,"profit":1423029,"unknown_profit_count":0},{"week_start":"2026-05-25","week_end":"2026-05-31","label":"5/25~5/31","buy_count":9,"buy_amt":54751720,"sell_count":4,"sell_revenue":30100000,"sell_cost":28665820,"profit":1434180,"unknown_profit_count":0},{"week_start":"2026-06-01","week_end":"2026-06-07","label":"6/1~6/7","buy_count":11,"buy_amt":97039270,"sell_count":9,"sell_revenue":82660000,"sell_cost":73710350,"profit":8949650,"unknown_profit_count":0},{"week_start":"2026-06-08","week_end":"2026-06-14","label":"6/8~6/14","buy_count":16,"buy_amt":127708740,"sell_count":8,"sell_revenue":98700000,"sell_cost":88446570,"profit":10253430,"unknown_profit_count":0},{"week_start":"2026-06-15","week_end":"2026-06-21","label":"6/15~6/21","buy_count":7,"buy_amt":40208240,"sell_count":15,"sell_revenue":116700000,"sell_cost":101098020,"profit":15601980,"unknown_profit_count":0},{"week_start":"2026-06-22","week_end":"2026-06-28","label":"6/22~6/28","buy_count":20,"buy_amt":165003930,"sell_count":12,"sell_revenue":123228310,"sell_cost":106704330,"profit":16523980,"unknown_profit_count":0},{"week_start":"2026-06-29","week_end":"2026-07-05","label":"6/29~7/5","buy_count":10,"buy_amt":110182640,"sell_count":7,"sell_revenue":54800000,"sell_cost":47746180,"profit":7053820,"unknown_profit_count":0},{"week_start":"2026-07-06","week_end":"2026-07-12","label":"7/6~7/12","buy_count":4,"buy_amt":44003170,"sell_count":12,"sell_revenue":123600000,"sell_cost":114411340,"profit":9188660,"unknown_profit_count":0},{"week_start":"2026-07-13","week_end":"2026-07-19","label":"7/13~7/19","buy_count":5,"buy_amt":41986210,"sell_count":12,"sell_revenue":103060000,"sell_cost":95012010,"profit":8047990,"unknown_profit_count":0},{"week_start":"2026-07-20","week_end":"2026-07-26","label":"7/20~7/26","buy_count":13,"buy_amt":101472600,"sell_count":12,"sell_revenue":67200000,"sell_cost":61138350,"profit":6061650,"unknown_profit_count":0},{"week_start":"2026-07-27","week_end":"2026-08-02","label":"7/27~8/2","buy_count":5,"buy_amt":47397090,"sell_count":9,"sell_revenue":125700000,"sell_cost":111034240,"profit":14665760,"unknown_profit_count":0},{"week_start":"2026-08-03","week_end":"2026-08-09","label":"8/3~8/9","buy_count":12,"buy_amt":128241900,"sell_count":5,"sell_revenue":39000000,"sell_cost":34983610,"profit":4016390,"unknown_profit_count":0},{"week_start":"2026-08-10","week_end":"2026-08-16","label":"8/10~8/16","buy_count":7,"buy_amt":82930300,"sell_count":4,"sell_revenue":52800000,"sell_cost":51064700,"profit":1735300,"unknown_profit_count":0},{"week_start":"2026-08-17","week_end":"2026-08-23","label":"8/17~8/23","buy_count":5,"buy_amt":70311680,"sell_count":5,"sell_revenue":70400000,"sell_cost":65736880,"profit":4663120,"unknown_profit_count":0},{"week_start":"2026-08-24","week_end":"2026-08-30","label":"8/24~8/30","buy_count":3,"buy_amt":17621250,"sell_count":8,"sell_revenue":121200000,"sell_cost":111274040,"profit":9925960,"unknown_profit_count":0},{"week_start":"2026-08-31","week_end":"2026-09-06","label":"8/31~9/6","buy_count":8,"buy_amt":97159160,"sell_count":7,"sell_revenue":103500000,"sell_cost":98314470,"profit":5185530,"unknown_profit_count":0},{"week_start":"2026-09-07","week_end":"2026-09-13","label":"9/7~9/13","buy_count":4,"buy_amt":36226360,"sell_count":8,"sell_revenue":98600000,"sell_cost":93993340,"profit":4606660,"unknown_profit_count":0}],"totals":{"weeks":55,"buy_count":401,"buy_amt":5050859811,"sell_count":364,"sell_revenue":4930511850,"sell_cost":4643945040,"profit":286566810,"unknown_profit_count":1,"cancelled":7}}
+;
 
-const RATE = 1337.7012;
-function fmtManwon(v){ return v.toLocaleString('ko-KR', {maximumFractionDigits:0}); }
-function toUsd(manwon){ return Math.round(manwon*10000/RATE); }
+const weeks = DATA.weeks;
+const totals = DATA.totals;
 
-const sortState = { strong: 'gap', normal: 'gap' };
+function fmtWon(n) {
+  return (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ko-KR') + '원';
+}
+function fmtNum(n) { return n.toLocaleString('ko-KR'); }
 
-function sortItems(items, mode){
-  const copy = items.slice();
-  if(mode === 'name'){
-    copy.sort((a,b) => {
-      const c = a.category.localeCompare(b.category, 'ko');
-      if(c !== 0) return c;
-      return (a.trim||'').localeCompare(b.trim||'', 'ko');
-    });
-  } else {
-    copy.sort((a,b) => a.diffManwon - b.diffManwon);
+// ---- Stat tiles ----
+document.getElementById('tile-buy').textContent = fmtNum(totals.buy_count) + '대';
+document.getElementById('tile-buy-amt').textContent = '매입금액 ' + fmtWon(totals.buy_amt);
+document.getElementById('tile-sell').textContent = fmtNum(totals.sell_count) + '대';
+document.getElementById('tile-sell-amt').textContent = '판매금액 ' + fmtWon(totals.sell_revenue);
+document.getElementById('tile-profit').textContent = fmtWon(totals.profit);
+const margin = (totals.profit / totals.sell_revenue * 100).toFixed(1);
+document.getElementById('tile-margin').textContent = '판매금액 대비 ' + margin + '%';
+document.getElementById('tile-avg').textContent =
+  (totals.buy_count / totals.weeks).toFixed(1) + ' / ' + (totals.sell_count / totals.weeks).toFixed(1);
+
+// ---- Tooltip helper ----
+const tooltipEl = document.getElementById('tooltip');
+function showTooltip(x, y, html) {
+  tooltipEl.innerHTML = html;
+  tooltipEl.style.left = x + 'px';
+  tooltipEl.style.top = (y - 10) + 'px';
+  tooltipEl.classList.add('show');
+}
+function hideTooltip() { tooltipEl.classList.remove('show'); }
+
+// ---- Nice scale helper ----
+function niceMax(v) {
+  if (v <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const norm = v / mag;
+  let step;
+  if (norm <= 1) step = 1;
+  else if (norm <= 2) step = 2;
+  else if (norm <= 5) step = 5;
+  else step = 10;
+  return step * mag;
+}
+
+const svgNS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs) {
+  const e = document.createElementNS(svgNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// ================= Chart 1: grouped bar (buy vs sell count) =================
+(function () {
+  const groupW = 34;
+  const barW = 12;
+  const gap = 2;
+  const leftPad = 40, rightPad = 12, topPad = 12, bottomPad = 28;
+  const chartH = 200;
+  const width = weeks.length * groupW + leftPad + rightPad;
+  const height = chartH + topPad + bottomPad;
+
+  const maxCount = niceMax(Math.max(...weeks.map(w => Math.max(w.buy_count, w.sell_count))));
+  const yScale = v => chartH - (v / maxCount) * chartH;
+
+  const svg = el('svg', { width, height, viewBox: `0 0 ${width} ${height}`, style: 'display:block; font-family:inherit;' });
+
+  // gridlines + y ticks
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(maxCount * i / ticks);
+    const y = topPad + yScale(v);
+    svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: y, y2: y, stroke: 'var(--grid)', 'stroke-width': 1 }));
+    const t = el('text', { x: leftPad - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = v;
+    svg.appendChild(t);
   }
-  return copy;
-}
+  // baseline
+  svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: topPad + chartH, y2: topPad + chartH, stroke: 'var(--baseline)', 'stroke-width': 1 }));
 
-function rowHtml(item, idx, tier){
-  const priceUsd = toUsd(item.priceManwon);
-  const diffUsd = toUsd(item.diffManwon);
-  const isCheaper = item.diffManwon <= 0;
-  const badgeClass = tier === 'strong' ? 'good' : 'warn';
-  const badgeLabel = isCheaper
-    ? `${Math.abs(diffUsd).toLocaleString('en-US')}\$ 더 저렴`
-    : `+${diffUsd.toLocaleString('en-US')}\$ 차이`;
-  const specs = [];
-  if(item.yearline) specs.push(`<span class="spec">${item.yearline}</span>`);
-  if(item.accident) specs.push(`<span class="spec">${item.accident}</span>`);
-  if(item.eye) specs.push(`<span class="spec eye">eye 인증</span>`);
-  if(item.reserved) specs.push(`<span class="spec reserved">예약 중</span>`);
-  return `
-  <div class="row${isCheaper ? ' cheaper' : ''}">
-    <div class="rank num">${idx+1}</div>
-    <div class="cat">
-      <div class="brand-model">${item.category}</div>
-      <div class="target">목표가 <span class="num">$${item.targetUsd.toLocaleString('en-US')}</span></div>
-    </div>
-    <div class="detail">
-      <div class="trim">${item.trim || ''}</div>
-      <div class="spec-row">${specs.join('')}</div>
-    </div>
-    <div class="price-block">
-      <div class="price-krw num">${fmtManwon(item.priceManwon)}만원</div>
-      <div class="price-usd num">약 $${priceUsd.toLocaleString('en-US')}</div>
-      <div class="gap-badge ${isCheaper ? 'good' : badgeClass}">${badgeLabel}</div>
-    </div>
-    <a class="view-btn" href="${item.url}" target="_blank" rel="noopener noreferrer">매물 보기 →</a>
-  </div>`;
-}
-
-function renderPanel(tier){
-  const items = DATA[tier] || [];
-  const sorted = sortItems(items, sortState[tier]);
-  const listId = tier === 'strong' ? 'listStrong' : 'listNormal';
-  document.getElementById(listId).innerHTML = sorted.map((it,i)=>rowHtml(it,i,tier)).join('');
-}
-
-function render(){
-  document.getElementById('countStrong').textContent = DATA.strong.length;
-  document.getElementById('countNormal').textContent = DATA.normal.length;
-  renderPanel('strong');
-  renderPanel('normal');
-  document.getElementById('updatedAt').textContent = DATA.updatedAt || '-';
-  document.getElementById('snapshotNote').textContent = DATA.snapshotNote || '';
-}
-
-document.querySelectorAll('.tab-btn').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('.tab-btn').forEach(b=>b.setAttribute('aria-selected','false'));
-    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-    btn.setAttribute('aria-selected','true');
-    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
-  });
-});
-
-document.querySelectorAll('.sort-group').forEach(group=>{
-  const tier = group.dataset.panel;
-  group.querySelectorAll('.sort-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      sortState[tier] = btn.dataset.sort;
-      group.querySelectorAll('.sort-btn').forEach(b=>b.setAttribute('aria-pressed', b===btn ? 'true' : 'false'));
-      renderPanel(tier);
+  weeks.forEach((w, i) => {
+    const gx = leftPad + i * groupW;
+    const bBuy = el('rect', {
+      x: gx + (groupW - (barW * 2 + gap)) / 2,
+      y: topPad + yScale(w.buy_count),
+      width: barW,
+      height: chartH - yScale(w.buy_count),
+      rx: 3, fill: 'var(--series-1)', class: 'bar'
     });
-  });
-});
+    const bSell = el('rect', {
+      x: gx + (groupW - (barW * 2 + gap)) / 2 + barW + gap,
+      y: topPad + yScale(w.sell_count),
+      width: barW,
+      height: chartH - yScale(w.sell_count),
+      rx: 3, fill: 'var(--series-2)', class: 'bar'
+    });
+    [bBuy, bSell].forEach(b => {
+      b.style.cursor = 'pointer';
+      b.addEventListener('mousemove', (ev) => {
+        showTooltip(ev.clientX, ev.clientY, `<b>${w.label}</b><br>매입 ${w.buy_count}대 · 판매 ${w.sell_count}대`);
+      });
+      b.addEventListener('mouseleave', hideTooltip);
+    });
+    svg.appendChild(bBuy);
+    svg.appendChild(bSell);
 
-render();
+    // x label every ~4 weeks to avoid crowding
+    if (i % 4 === 0 || i === weeks.length - 1) {
+      const t = el('text', { x: gx + groupW / 2, y: topPad + chartH + 16, 'text-anchor': 'middle', 'font-size': 9, fill: 'var(--text-muted)' });
+      t.textContent = w.label;
+      svg.appendChild(t);
+    }
+  });
+
+  document.getElementById('chart1-wrap').appendChild(svg);
+})();
+
+// ================= Chart 2: diverging bar (profit) =================
+(function () {
+  const groupW = 34;
+  const barW = 16;
+  const leftPad = 56, rightPad = 12, topPad = 12, bottomPad = 28;
+  const chartH = 220;
+  const width = weeks.length * groupW + leftPad + rightPad;
+  const height = chartH + topPad + bottomPad;
+
+  const maxAbs = niceMax(Math.max(...weeks.map(w => Math.abs(w.profit))));
+  const zeroY = topPad + chartH / 2;
+  const yScale = v => (v / maxAbs) * (chartH / 2);
+
+  const svg = el('svg', { width, height, viewBox: `0 0 ${width} ${height}`, style: 'display:block; font-family:inherit;' });
+
+  const ticks = [maxAbs, maxAbs / 2, 0, -maxAbs / 2, -maxAbs];
+  ticks.forEach(v => {
+    const y = zeroY - yScale(v);
+    svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: y, y2: y, stroke: v === 0 ? 'var(--baseline)' : 'var(--grid)', 'stroke-width': 1 }));
+    const t = el('text', { x: leftPad - 8, y: y + 3, 'text-anchor': 'end', 'font-size': 9, fill: 'var(--text-muted)' });
+    t.textContent = (v / 10000).toLocaleString('ko-KR') + '만';
+    svg.appendChild(t);
+  });
+
+  weeks.forEach((w, i) => {
+    const gx = leftPad + i * groupW + (groupW - barW) / 2;
+    const isPos = w.profit >= 0;
+    const barH = Math.abs(yScale(w.profit));
+    const y = isPos ? zeroY - barH : zeroY;
+    const rect = el('rect', {
+      x: gx, y: y, width: barW, height: Math.max(barH, 0.5),
+      fill: isPos ? 'var(--pos)' : 'var(--neg)',
+      rx: 3
+    });
+    rect.style.cursor = 'pointer';
+    rect.addEventListener('mousemove', (ev) => {
+      showTooltip(ev.clientX, ev.clientY, `<b>${w.label}</b><br>순수익 ${fmtWon(w.profit)}`);
+    });
+    rect.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(rect);
+
+    if (i % 4 === 0 || i === weeks.length - 1) {
+      const t = el('text', { x: gx + barW / 2, y: topPad + chartH + 16, 'text-anchor': 'middle', 'font-size': 9, fill: 'var(--text-muted)' });
+      t.textContent = w.label;
+      svg.appendChild(t);
+    }
+  });
+
+  document.getElementById('chart2-wrap').appendChild(svg);
+})();
+
+// ================= Table =================
+(function () {
+  const tbody = document.getElementById('table-body');
+  weeks.forEach(w => {
+    const tr = document.createElement('tr');
+    const profitClass = w.profit > 0 ? 'profit-pos' : (w.profit < 0 ? 'profit-neg' : '');
+    tr.innerHTML = `
+      <td>${w.week_start.slice(2).replace(/-/g,'.')} ~ ${w.week_end.slice(2).replace(/-/g,'.')}</td>
+      <td>${fmtNum(w.buy_count)}</td>
+      <td>${fmtNum(w.sell_count)}</td>
+      <td class="${profitClass}">${w.sell_count > 0 ? fmtWon(w.profit) : '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+})();
 </script>
+
 </body>
 </html>
