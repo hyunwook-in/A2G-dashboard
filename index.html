@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>망고카 주간 매입판매 현황</title>
+<title>A2G 네트웍스 대시보드</title>
 <style>
   .viz-root {
     color-scheme: light;
@@ -158,8 +158,26 @@
 
 <div class="viz-root">
   <div class="wrap">
-    <h1>망고카 주간 매입 · 판매 현황</h1>
-    <p class="subtitle">2025-08-25 ~ 2026-09-13 (총 55주) · 「월별판매현황」 시트 기준, 매입일자 / 매도일자(또는 입금일자) 기준 주별 집계</p>
+    <h1>A2G 네트웍스 대시보드</h1>
+    <p class="subtitle">2026-01-01 ~ 2026-09-13 (2026년 이후 자료) · 「월별판매현황」 시트 기준, 매입일자 / 매도일자(또는 입금일자) 기준 집계</p>
+
+    <div class="panel">
+      <h2>월별 지표</h2>
+      <p class="panel-sub">2026년 1월 ~ 9월, 대수(매입/판매) · 매출(판매금액)</p>
+      <div class="legend">
+        <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>매입 대수</span>
+        <span class="legend-item"><span class="swatch" style="background:var(--series-2)"></span>판매 대수</span>
+      </div>
+      <div class="scroll-x">
+        <div class="chart-svg-wrap" id="chart-month-count-wrap"></div>
+      </div>
+      <div class="legend" style="margin-top:14px;">
+        <span class="legend-item"><span class="swatch" style="background:var(--series-1)"></span>매출(판매금액)</span>
+      </div>
+      <div class="scroll-x">
+        <div class="chart-svg-wrap" id="chart-month-rev-wrap"></div>
+      </div>
+    </div>
 
     <div class="tiles">
       <div class="tile">
@@ -206,7 +224,7 @@
 
     <div class="panel">
       <h2>주별 상세 표</h2>
-      <p class="panel-sub">스크롤하여 전체 55주 확인 가능</p>
+      <p class="panel-sub">스크롤하여 전체 37주 확인 가능</p>
       <div class="table-scroll">
         <table id="data-table">
           <thead>
@@ -225,13 +243,13 @@
     <footer class="notes">
       <p class="note">※ 데이터 산출 기준 및 참고사항</p>
       <ul class="note">
-        <li>매입 대수는 「월별판매현황」 시트의 <b>매입일자</b> 기준, 판매 대수·순수익은 <b>매도일자</b>(없는 경우 입금일자) 기준으로 주(월~일)별 집계했습니다.</li>
-        <li>순수익 = 매도금액 − 총 차대금(계약매입금액 + 알선수수료 + 취득세 + 성능비 등 부대경비 합계).</li>
-        <li>계약 취소/환불 처리된 <b>7건</b>은 매입 대수에서 제외했습니다.</li>
-        <li>1건(BMW520d, 397수1388)은 원본 파일의 매도금액 셀이 손상되어("2/2+Y60:AG60") 값을 확인할 수 없어 판매 대수에는 포함하되 순수익 계산에서는 제외했습니다.</li>
-        <li>원본 데이터 중 일부 날짜(5건)는 "2026년 12월"로 입력되어 있으나 문맥상(전월 입금일 등과의 비교) 2025년 12월의 오기로 판단되어 2025년으로 보정했습니다.</li>
+        <li>2026년 1월 1일 이후 자료만 포함했습니다 (2025년 매입·매도 건은 제외).</li>
+        <li>매입 대수는 「월별판매현황」 시트의 <b>매입일자</b> 기준, 판매 대수·순수익·매출은 <b>매도일자</b>(없는 경우 입금일자) 기준으로 집계했습니다. 월별 지표는 해당 월의 달력 기준, 주별 지표는 월요일 시작 기준입니다.</li>
+        <li>매출은 판매금액(부대비용 차감 전) 합계이며, 순수익 = 매도금액 − 총 차대금(계약매입금액 + 알선수수료 + 취득세 + 성능비 등 부대경비 합계)입니다.</li>
+        <li>계약 취소/환불 처리된 건은 매입 대수에서 제외했습니다.</li>
+        <li>1건(BMW520d, 397수1388, 2026-02 매도)은 원본 파일의 매도금액 셀이 손상되어("2/2+Y60:AG60") 값을 확인할 수 없어 판매 대수에는 포함하되 순수익·매출 계산에서는 제외했습니다.</li>
         <li>차량 1대(폴로, 14오0767)는 매입일자가 비어 있어 「26년9월09일」 일일업무현황 시트의 현금출납 내역("9/3 김경록-폴로(14오0767) 차량매입대금")을 참고해 9/3로 보완했습니다.</li>
-        <li>거래내역_28004(이전비)·27304(운영비) 계좌 파일은 2026-09-09 하루치 은행 거래내역으로, 해당 일자 일일업무현황 검증용 자료이며 이번 주별 집계에는 직접 반영하지 않았습니다.</li>
+        <li>거래내역_28004(이전비)·27304(운영비) 계좌 파일은 2026-09-09 하루치 은행 거래내역으로, 해당 일자 일일업무현황 검증용 자료이며 이번 집계에는 직접 반영하지 않았습니다.</li>
       </ul>
     </footer>
   </div>
@@ -240,10 +258,11 @@
 <div class="tooltip" id="tooltip"></div>
 
 <script>
-const DATA = {"weeks":[{"week_start":"2025-08-25","week_end":"2025-08-31","label":"8/25~8/31","buy_count":1,"buy_amt":7994450,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-01","week_end":"2025-09-07","label":"9/1~9/7","buy_count":1,"buy_amt":4308350,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-08","week_end":"2025-09-14","label":"9/8~9/14","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-15","week_end":"2025-09-21","label":"9/15~9/21","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-22","week_end":"2025-09-28","label":"9/22~9/28","buy_count":1,"buy_amt":25748780,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-09-29","week_end":"2025-10-05","label":"9/29~10/5","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-06","week_end":"2025-10-12","label":"10/6~10/12","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-13","week_end":"2025-10-19","label":"10/13~10/19","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-20","week_end":"2025-10-26","label":"10/20~10/26","buy_count":3,"buy_amt":38136930,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-10-27","week_end":"2025-11-02","label":"10/27~11/2","buy_count":2,"buy_amt":26780490,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-03","week_end":"2025-11-09","label":"11/3~11/9","buy_count":0,"buy_amt":0,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-10","week_end":"2025-11-16","label":"11/10~11/16","buy_count":1,"buy_amt":6708336,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-17","week_end":"2025-11-23","label":"11/17~11/23","buy_count":2,"buy_amt":78880950,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-11-24","week_end":"2025-11-30","label":"11/24~11/30","buy_count":3,"buy_amt":69037490,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-01","week_end":"2025-12-07","label":"12/1~12/7","buy_count":5,"buy_amt":45037510,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-08","week_end":"2025-12-14","label":"12/8~12/14","buy_count":8,"buy_amt":58321860,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2025-12-15","week_end":"2025-12-21","label":"12/15~12/21","buy_count":5,"buy_amt":43117260,"sell_count":4,"sell_revenue":40800000,"sell_cost":35989520,"profit":4810480,"unknown_profit_count":0},{"week_start":"2025-12-22","week_end":"2025-12-28","label":"12/22~12/28","buy_count":7,"buy_amt":56710641,"sell_count":6,"sell_revenue":61240000,"sell_cost":56667850,"profit":4572150,"unknown_profit_count":0},{"week_start":"2025-12-29","week_end":"2026-01-04","label":"12/29~1/4","buy_count":11,"buy_amt":210381309,"sell_count":4,"sell_revenue":46900000,"sell_cost":45497610,"profit":1402390,"unknown_profit_count":0},{"week_start":"2026-01-05","week_end":"2026-01-11","label":"1/5~1/11","buy_count":8,"buy_amt":222491261,"sell_count":7,"sell_revenue":291914440,"sell_cost":289970390,"profit":1944050,"unknown_profit_count":0},{"week_start":"2026-01-12","week_end":"2026-01-18","label":"1/12~1/18","buy_count":8,"buy_amt":91288234,"sell_count":8,"sell_revenue":92540000,"sell_cost":87695990,"profit":4844010,"unknown_profit_count":0},{"week_start":"2026-01-19","week_end":"2026-01-25","label":"1/19~1/25","buy_count":6,"buy_amt":96615277,"sell_count":3,"sell_revenue":38990000,"sell_cost":35811214,"profit":3178786,"unknown_profit_count":0},{"week_start":"2026-01-26","week_end":"2026-02-01","label":"1/26~2/1","buy_count":17,"buy_amt":210501234,"sell_count":9,"sell_revenue":91340000,"sell_cost":81672175,"profit":9667825,"unknown_profit_count":0},{"week_start":"2026-02-02","week_end":"2026-02-08","label":"2/2~2/8","buy_count":7,"buy_amt":146615350,"sell_count":11,"sell_revenue":93200000,"sell_cost":83147261,"profit":10052739,"unknown_profit_count":1},{"week_start":"2026-02-09","week_end":"2026-02-15","label":"2/9~2/15","buy_count":16,"buy_amt":170025653,"sell_count":10,"sell_revenue":189169900,"sell_cost":180870645,"profit":8299255,"unknown_profit_count":0},{"week_start":"2026-02-16","week_end":"2026-02-22","label":"2/16~2/22","buy_count":4,"buy_amt":37377320,"sell_count":6,"sell_revenue":86400000,"sell_cost":81910580,"profit":4489420,"unknown_profit_count":0},{"week_start":"2026-02-23","week_end":"2026-03-01","label":"2/23~3/1","buy_count":13,"buy_amt":113341341,"sell_count":8,"sell_revenue":71300000,"sell_cost":61911374,"profit":9388626,"unknown_profit_count":0},{"week_start":"2026-03-02","week_end":"2026-03-08","label":"3/2~3/8","buy_count":10,"buy_amt":75840051,"sell_count":8,"sell_revenue":90750000,"sell_cost":82465446,"profit":8284554,"unknown_profit_count":0},{"week_start":"2026-03-09","week_end":"2026-03-15","label":"3/9~3/15","buy_count":16,"buy_amt":307429513,"sell_count":13,"sell_revenue":149490000,"sell_cost":139997080,"profit":9492920,"unknown_profit_count":0},{"week_start":"2026-03-16","week_end":"2026-03-22","label":"3/16~3/22","buy_count":21,"buy_amt":426211785,"sell_count":17,"sell_revenue":512813780,"sell_cost":495580251,"profit":17233529,"unknown_profit_count":0},{"week_start":"2026-03-23","week_end":"2026-03-29","label":"3/23~3/29","buy_count":11,"buy_amt":109896337,"sell_count":11,"sell_revenue":224540000,"sell_cost":224724373,"profit":-184373,"unknown_profit_count":0},{"week_start":"2026-03-30","week_end":"2026-04-05","label":"3/30~4/5","buy_count":12,"buy_amt":97593731,"sell_count":8,"sell_revenue":83900000,"sell_cost":75774500,"profit":8125500,"unknown_profit_count":0},{"week_start":"2026-04-06","week_end":"2026-04-12","label":"4/6~4/12","buy_count":16,"buy_amt":316078087,"sell_count":16,"sell_revenue":158000000,"sell_cost":147632535,"profit":10367465,"unknown_profit_count":0},{"week_start":"2026-04-13","week_end":"2026-04-19","label":"4/13~4/19","buy_count":12,"buy_amt":251616101,"sell_count":15,"sell_revenue":295407380,"sell_cost":282572361,"profit":12835019,"unknown_profit_count":0},{"week_start":"2026-04-20","week_end":"2026-04-26","label":"4/20~4/26","buy_count":9,"buy_amt":80965210,"sell_count":11,"sell_revenue":203642000,"sell_cost":193661364,"profit":9980636,"unknown_profit_count":0},{"week_start":"2026-04-27","week_end":"2026-05-03","label":"4/27~5/3","buy_count":5,"buy_amt":101524730,"sell_count":13,"sell_revenue":235676040,"sell_cost":237470682,"profit":-1794642,"unknown_profit_count":0},{"week_start":"2026-05-04","week_end":"2026-05-10","label":"5/4~5/10","buy_count":5,"buy_amt":64133890,"sell_count":5,"sell_revenue":89100000,"sell_cost":84576150,"profit":4523850,"unknown_profit_count":0},{"week_start":"2026-05-11","week_end":"2026-05-17","label":"5/11~5/17","buy_count":6,"buy_amt":56536310,"sell_count":19,"sell_revenue":238200000,"sell_cost":222484468,"profit":15715532,"unknown_profit_count":0},{"week_start":"2026-05-18","week_end":"2026-05-24","label":"5/18~5/24","buy_count":10,"buy_amt":141369780,"sell_count":15,"sell_revenue":133950000,"sell_cost":132526971,"profit":1423029,"unknown_profit_count":0},{"week_start":"2026-05-25","week_end":"2026-05-31","label":"5/25~5/31","buy_count":9,"buy_amt":54751720,"sell_count":4,"sell_revenue":30100000,"sell_cost":28665820,"profit":1434180,"unknown_profit_count":0},{"week_start":"2026-06-01","week_end":"2026-06-07","label":"6/1~6/7","buy_count":11,"buy_amt":97039270,"sell_count":9,"sell_revenue":82660000,"sell_cost":73710350,"profit":8949650,"unknown_profit_count":0},{"week_start":"2026-06-08","week_end":"2026-06-14","label":"6/8~6/14","buy_count":16,"buy_amt":127708740,"sell_count":8,"sell_revenue":98700000,"sell_cost":88446570,"profit":10253430,"unknown_profit_count":0},{"week_start":"2026-06-15","week_end":"2026-06-21","label":"6/15~6/21","buy_count":7,"buy_amt":40208240,"sell_count":15,"sell_revenue":116700000,"sell_cost":101098020,"profit":15601980,"unknown_profit_count":0},{"week_start":"2026-06-22","week_end":"2026-06-28","label":"6/22~6/28","buy_count":20,"buy_amt":165003930,"sell_count":12,"sell_revenue":123228310,"sell_cost":106704330,"profit":16523980,"unknown_profit_count":0},{"week_start":"2026-06-29","week_end":"2026-07-05","label":"6/29~7/5","buy_count":10,"buy_amt":110182640,"sell_count":7,"sell_revenue":54800000,"sell_cost":47746180,"profit":7053820,"unknown_profit_count":0},{"week_start":"2026-07-06","week_end":"2026-07-12","label":"7/6~7/12","buy_count":4,"buy_amt":44003170,"sell_count":12,"sell_revenue":123600000,"sell_cost":114411340,"profit":9188660,"unknown_profit_count":0},{"week_start":"2026-07-13","week_end":"2026-07-19","label":"7/13~7/19","buy_count":5,"buy_amt":41986210,"sell_count":12,"sell_revenue":103060000,"sell_cost":95012010,"profit":8047990,"unknown_profit_count":0},{"week_start":"2026-07-20","week_end":"2026-07-26","label":"7/20~7/26","buy_count":13,"buy_amt":101472600,"sell_count":12,"sell_revenue":67200000,"sell_cost":61138350,"profit":6061650,"unknown_profit_count":0},{"week_start":"2026-07-27","week_end":"2026-08-02","label":"7/27~8/2","buy_count":5,"buy_amt":47397090,"sell_count":9,"sell_revenue":125700000,"sell_cost":111034240,"profit":14665760,"unknown_profit_count":0},{"week_start":"2026-08-03","week_end":"2026-08-09","label":"8/3~8/9","buy_count":12,"buy_amt":128241900,"sell_count":5,"sell_revenue":39000000,"sell_cost":34983610,"profit":4016390,"unknown_profit_count":0},{"week_start":"2026-08-10","week_end":"2026-08-16","label":"8/10~8/16","buy_count":7,"buy_amt":82930300,"sell_count":4,"sell_revenue":52800000,"sell_cost":51064700,"profit":1735300,"unknown_profit_count":0},{"week_start":"2026-08-17","week_end":"2026-08-23","label":"8/17~8/23","buy_count":5,"buy_amt":70311680,"sell_count":5,"sell_revenue":70400000,"sell_cost":65736880,"profit":4663120,"unknown_profit_count":0},{"week_start":"2026-08-24","week_end":"2026-08-30","label":"8/24~8/30","buy_count":3,"buy_amt":17621250,"sell_count":8,"sell_revenue":121200000,"sell_cost":111274040,"profit":9925960,"unknown_profit_count":0},{"week_start":"2026-08-31","week_end":"2026-09-06","label":"8/31~9/6","buy_count":8,"buy_amt":97159160,"sell_count":7,"sell_revenue":103500000,"sell_cost":98314470,"profit":5185530,"unknown_profit_count":0},{"week_start":"2026-09-07","week_end":"2026-09-13","label":"9/7~9/13","buy_count":4,"buy_amt":36226360,"sell_count":8,"sell_revenue":98600000,"sell_cost":93993340,"profit":4606660,"unknown_profit_count":0}],"totals":{"weeks":55,"buy_count":401,"buy_amt":5050859811,"sell_count":364,"sell_revenue":4930511850,"sell_cost":4643945040,"profit":286566810,"unknown_profit_count":1,"cancelled":7}}
+const DATA = {"weeks":[{"week_start":"2025-12-29","week_end":"2026-01-04","label":"12/29~1/4","buy_count":3,"buy_amt":34411184,"sell_count":0,"sell_revenue":0,"sell_cost":0,"profit":0,"unknown_profit_count":0},{"week_start":"2026-01-05","week_end":"2026-01-11","label":"1/5~1/11","buy_count":8,"buy_amt":222491261,"sell_count":7,"sell_revenue":291914440,"sell_cost":289970390,"profit":1944050,"unknown_profit_count":0},{"week_start":"2026-01-12","week_end":"2026-01-18","label":"1/12~1/18","buy_count":8,"buy_amt":91288234,"sell_count":8,"sell_revenue":92540000,"sell_cost":87695990,"profit":4844010,"unknown_profit_count":0},{"week_start":"2026-01-19","week_end":"2026-01-25","label":"1/19~1/25","buy_count":6,"buy_amt":96615277,"sell_count":3,"sell_revenue":38990000,"sell_cost":35811214,"profit":3178786,"unknown_profit_count":0},{"week_start":"2026-01-26","week_end":"2026-02-01","label":"1/26~2/1","buy_count":17,"buy_amt":210501234,"sell_count":9,"sell_revenue":91340000,"sell_cost":81672175,"profit":9667825,"unknown_profit_count":0},{"week_start":"2026-02-02","week_end":"2026-02-08","label":"2/2~2/8","buy_count":7,"buy_amt":146615350,"sell_count":11,"sell_revenue":93200000,"sell_cost":83147261,"profit":10052739,"unknown_profit_count":1},{"week_start":"2026-02-09","week_end":"2026-02-15","label":"2/9~2/15","buy_count":16,"buy_amt":170025653,"sell_count":10,"sell_revenue":189169900,"sell_cost":180870645,"profit":8299255,"unknown_profit_count":0},{"week_start":"2026-02-16","week_end":"2026-02-22","label":"2/16~2/22","buy_count":4,"buy_amt":37377320,"sell_count":6,"sell_revenue":86400000,"sell_cost":81910580,"profit":4489420,"unknown_profit_count":0},{"week_start":"2026-02-23","week_end":"2026-03-01","label":"2/23~3/1","buy_count":13,"buy_amt":113341341,"sell_count":8,"sell_revenue":71300000,"sell_cost":61911374,"profit":9388626,"unknown_profit_count":0},{"week_start":"2026-03-02","week_end":"2026-03-08","label":"3/2~3/8","buy_count":10,"buy_amt":75840051,"sell_count":8,"sell_revenue":90750000,"sell_cost":82465446,"profit":8284554,"unknown_profit_count":0},{"week_start":"2026-03-09","week_end":"2026-03-15","label":"3/9~3/15","buy_count":16,"buy_amt":307429513,"sell_count":13,"sell_revenue":149490000,"sell_cost":139997080,"profit":9492920,"unknown_profit_count":0},{"week_start":"2026-03-16","week_end":"2026-03-22","label":"3/16~3/22","buy_count":21,"buy_amt":426211785,"sell_count":17,"sell_revenue":512813780,"sell_cost":495580251,"profit":17233529,"unknown_profit_count":0},{"week_start":"2026-03-23","week_end":"2026-03-29","label":"3/23~3/29","buy_count":11,"buy_amt":109896337,"sell_count":11,"sell_revenue":224540000,"sell_cost":224724373,"profit":-184373,"unknown_profit_count":0},{"week_start":"2026-03-30","week_end":"2026-04-05","label":"3/30~4/5","buy_count":12,"buy_amt":97593731,"sell_count":8,"sell_revenue":83900000,"sell_cost":75774500,"profit":8125500,"unknown_profit_count":0},{"week_start":"2026-04-06","week_end":"2026-04-12","label":"4/6~4/12","buy_count":16,"buy_amt":316078087,"sell_count":16,"sell_revenue":158000000,"sell_cost":147632535,"profit":10367465,"unknown_profit_count":0},{"week_start":"2026-04-13","week_end":"2026-04-19","label":"4/13~4/19","buy_count":12,"buy_amt":251616101,"sell_count":15,"sell_revenue":295407380,"sell_cost":282572361,"profit":12835019,"unknown_profit_count":0},{"week_start":"2026-04-20","week_end":"2026-04-26","label":"4/20~4/26","buy_count":9,"buy_amt":80965210,"sell_count":11,"sell_revenue":203642000,"sell_cost":193661364,"profit":9980636,"unknown_profit_count":0},{"week_start":"2026-04-27","week_end":"2026-05-03","label":"4/27~5/3","buy_count":5,"buy_amt":101524730,"sell_count":13,"sell_revenue":235676040,"sell_cost":237470682,"profit":-1794642,"unknown_profit_count":0},{"week_start":"2026-05-04","week_end":"2026-05-10","label":"5/4~5/10","buy_count":5,"buy_amt":64133890,"sell_count":5,"sell_revenue":89100000,"sell_cost":84576150,"profit":4523850,"unknown_profit_count":0},{"week_start":"2026-05-11","week_end":"2026-05-17","label":"5/11~5/17","buy_count":6,"buy_amt":56536310,"sell_count":19,"sell_revenue":238200000,"sell_cost":222484468,"profit":15715532,"unknown_profit_count":0},{"week_start":"2026-05-18","week_end":"2026-05-24","label":"5/18~5/24","buy_count":10,"buy_amt":141369780,"sell_count":15,"sell_revenue":133950000,"sell_cost":132526971,"profit":1423029,"unknown_profit_count":0},{"week_start":"2026-05-25","week_end":"2026-05-31","label":"5/25~5/31","buy_count":9,"buy_amt":54751720,"sell_count":4,"sell_revenue":30100000,"sell_cost":28665820,"profit":1434180,"unknown_profit_count":0},{"week_start":"2026-06-01","week_end":"2026-06-07","label":"6/1~6/7","buy_count":11,"buy_amt":97039270,"sell_count":9,"sell_revenue":82660000,"sell_cost":73710350,"profit":8949650,"unknown_profit_count":0},{"week_start":"2026-06-08","week_end":"2026-06-14","label":"6/8~6/14","buy_count":16,"buy_amt":127708740,"sell_count":8,"sell_revenue":98700000,"sell_cost":88446570,"profit":10253430,"unknown_profit_count":0},{"week_start":"2026-06-15","week_end":"2026-06-21","label":"6/15~6/21","buy_count":7,"buy_amt":40208240,"sell_count":15,"sell_revenue":116700000,"sell_cost":101098020,"profit":15601980,"unknown_profit_count":0},{"week_start":"2026-06-22","week_end":"2026-06-28","label":"6/22~6/28","buy_count":20,"buy_amt":165003930,"sell_count":12,"sell_revenue":123228310,"sell_cost":106704330,"profit":16523980,"unknown_profit_count":0},{"week_start":"2026-06-29","week_end":"2026-07-05","label":"6/29~7/5","buy_count":10,"buy_amt":110182640,"sell_count":7,"sell_revenue":54800000,"sell_cost":47746180,"profit":7053820,"unknown_profit_count":0},{"week_start":"2026-07-06","week_end":"2026-07-12","label":"7/6~7/12","buy_count":4,"buy_amt":44003170,"sell_count":12,"sell_revenue":123600000,"sell_cost":114411340,"profit":9188660,"unknown_profit_count":0},{"week_start":"2026-07-13","week_end":"2026-07-19","label":"7/13~7/19","buy_count":5,"buy_amt":41986210,"sell_count":12,"sell_revenue":103060000,"sell_cost":95012010,"profit":8047990,"unknown_profit_count":0},{"week_start":"2026-07-20","week_end":"2026-07-26","label":"7/20~7/26","buy_count":13,"buy_amt":101472600,"sell_count":12,"sell_revenue":67200000,"sell_cost":61138350,"profit":6061650,"unknown_profit_count":0},{"week_start":"2026-07-27","week_end":"2026-08-02","label":"7/27~8/2","buy_count":5,"buy_amt":47397090,"sell_count":9,"sell_revenue":125700000,"sell_cost":111034240,"profit":14665760,"unknown_profit_count":0},{"week_start":"2026-08-03","week_end":"2026-08-09","label":"8/3~8/9","buy_count":12,"buy_amt":128241900,"sell_count":5,"sell_revenue":39000000,"sell_cost":34983610,"profit":4016390,"unknown_profit_count":0},{"week_start":"2026-08-10","week_end":"2026-08-16","label":"8/10~8/16","buy_count":7,"buy_amt":82930300,"sell_count":4,"sell_revenue":52800000,"sell_cost":51064700,"profit":1735300,"unknown_profit_count":0},{"week_start":"2026-08-17","week_end":"2026-08-23","label":"8/17~8/23","buy_count":5,"buy_amt":70311680,"sell_count":5,"sell_revenue":70400000,"sell_cost":65736880,"profit":4663120,"unknown_profit_count":0},{"week_start":"2026-08-24","week_end":"2026-08-30","label":"8/24~8/30","buy_count":3,"buy_amt":17621250,"sell_count":8,"sell_revenue":121200000,"sell_cost":111274040,"profit":9925960,"unknown_profit_count":0},{"week_start":"2026-08-31","week_end":"2026-09-06","label":"8/31~9/6","buy_count":8,"buy_amt":97159160,"sell_count":7,"sell_revenue":103500000,"sell_cost":98314470,"profit":5185530,"unknown_profit_count":0},{"week_start":"2026-09-07","week_end":"2026-09-13","label":"9/7~9/13","buy_count":4,"buy_amt":36226360,"sell_count":8,"sell_revenue":98600000,"sell_cost":93993340,"profit":4606660,"unknown_profit_count":0}],"months":[{"year":2026,"month":1,"label":"2026.01","buy_count":42,"buy_amt":655307190,"sell_count":27,"sell_revenue":514784440,"sell_cost":495149769,"profit":19634671,"unknown_profit_count":0},{"year":2026,"month":2,"label":"2026.02","buy_count":40,"buy_amt":467359664,"sell_count":35,"sell_revenue":440069900,"sell_cost":407839860,"profit":32230040,"unknown_profit_count":1},{"year":2026,"month":3,"label":"2026.03","buy_count":60,"buy_amt":941393086,"sell_count":52,"sell_revenue":1000593780,"sell_cost":964790620,"profit":35803160,"unknown_profit_count":0},{"year":2026,"month":4,"label":"2026.04","buy_count":52,"buy_amt":825762459,"sell_count":60,"sell_revenue":953625420,"sell_cost":915087972,"profit":38537448,"unknown_profit_count":0},{"year":2026,"month":5,"label":"2026.05","buy_count":30,"buy_amt":316791700,"sell_count":43,"sell_revenue":491350000,"sell_cost":468253409,"profit":23096591,"unknown_profit_count":0},{"year":2026,"month":6,"label":"2026.06","buy_count":58,"buy_amt":452008290,"sell_count":46,"sell_revenue":433188310,"sell_cost":379714430,"profit":53473880,"unknown_profit_count":0},{"year":2026,"month":7,"label":"2026.07","buy_count":33,"buy_amt":322993600,"sell_count":50,"sell_revenue":462460000,"sell_cost":419586960,"profit":42873040,"unknown_profit_count":0},{"year":2026,"month":8,"label":"2026.08","buy_count":27,"buy_amt":299105130,"sell_count":22,"sell_revenue":283400000,"sell_cost":263059230,"profit":20340770,"unknown_profit_count":0},{"year":2026,"month":9,"label":"2026.09","buy_count":12,"buy_amt":133385520,"sell_count":15,"sell_revenue":202100000,"sell_cost":192307810,"profit":9792190,"unknown_profit_count":0}],"totals":{"weeks":37,"buy_count":354,"buy_amt":4414106639,"sell_count":350,"sell_revenue":4781571850,"sell_cost":4505790060,"profit":275781790,"unknown_profit_count":1},"cancelled":7}
 ;
 
 const weeks = DATA.weeks;
+const months = DATA.months;
 const totals = DATA.totals;
 
 function fmtWon(n) {
@@ -291,6 +310,113 @@ function el(tag, attrs) {
   for (const k in attrs) e.setAttribute(k, attrs[k]);
   return e;
 }
+
+// ================= Monthly chart A: grouped bar (buy vs sell count) =================
+(function () {
+  const groupW = 76;
+  const barW = 26;
+  const gap = 4;
+  const leftPad = 40, rightPad = 12, topPad = 12, bottomPad = 24;
+  const chartH = 180;
+  const width = months.length * groupW + leftPad + rightPad;
+  const height = chartH + topPad + bottomPad;
+
+  const maxCount = niceMax(Math.max(...months.map(m => Math.max(m.buy_count, m.sell_count))));
+  const yScale = v => chartH - (v / maxCount) * chartH;
+
+  const svg = el('svg', { width, height, viewBox: `0 0 ${width} ${height}`, style: 'display:block; font-family:inherit;' });
+
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(maxCount * i / ticks);
+    const y = topPad + yScale(v);
+    svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: y, y2: y, stroke: 'var(--grid)', 'stroke-width': 1 }));
+    const t = el('text', { x: leftPad - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = v;
+    svg.appendChild(t);
+  }
+  svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: topPad + chartH, y2: topPad + chartH, stroke: 'var(--baseline)', 'stroke-width': 1 }));
+
+  months.forEach((mo, i) => {
+    const gx = leftPad + i * groupW;
+    const bBuy = el('rect', {
+      x: gx + (groupW - (barW * 2 + gap)) / 2,
+      y: topPad + yScale(mo.buy_count),
+      width: barW,
+      height: chartH - yScale(mo.buy_count),
+      rx: 3, fill: 'var(--series-1)'
+    });
+    const bSell = el('rect', {
+      x: gx + (groupW - (barW * 2 + gap)) / 2 + barW + gap,
+      y: topPad + yScale(mo.sell_count),
+      width: barW,
+      height: chartH - yScale(mo.sell_count),
+      rx: 3, fill: 'var(--series-2)'
+    });
+    [bBuy, bSell].forEach(b => {
+      b.style.cursor = 'pointer';
+      b.addEventListener('mousemove', (ev) => {
+        showTooltip(ev.clientX, ev.clientY, `<b>${mo.label}</b><br>매입 ${mo.buy_count}대 · 판매 ${mo.sell_count}대`);
+      });
+      b.addEventListener('mouseleave', hideTooltip);
+    });
+    svg.appendChild(bBuy);
+    svg.appendChild(bSell);
+
+    const t = el('text', { x: gx + groupW / 2, y: topPad + chartH + 16, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = mo.label.slice(5) + '월';
+    svg.appendChild(t);
+  });
+
+  document.getElementById('chart-month-count-wrap').appendChild(svg);
+})();
+
+// ================= Monthly chart B: revenue bar =================
+(function () {
+  const groupW = 76;
+  const barW = 40;
+  const leftPad = 64, rightPad = 12, topPad = 12, bottomPad = 24;
+  const chartH = 160;
+  const width = months.length * groupW + leftPad + rightPad;
+  const height = chartH + topPad + bottomPad;
+
+  const maxRev = niceMax(Math.max(...months.map(m => m.sell_revenue)));
+  const yScale = v => chartH - (v / maxRev) * chartH;
+
+  const svg = el('svg', { width, height, viewBox: `0 0 ${width} ${height}`, style: 'display:block; font-family:inherit;' });
+
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = Math.round(maxRev * i / ticks);
+    const y = topPad + yScale(v);
+    svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: y, y2: y, stroke: 'var(--grid)', 'stroke-width': 1 }));
+    const t = el('text', { x: leftPad - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = (v / 100000000).toFixed(1) + '억';
+    svg.appendChild(t);
+  }
+  svg.appendChild(el('line', { x1: leftPad, x2: width - rightPad, y1: topPad + chartH, y2: topPad + chartH, stroke: 'var(--baseline)', 'stroke-width': 1 }));
+
+  months.forEach((mo, i) => {
+    const gx = leftPad + i * groupW + (groupW - barW) / 2;
+    const rect = el('rect', {
+      x: gx, y: topPad + yScale(mo.sell_revenue), width: barW,
+      height: chartH - yScale(mo.sell_revenue),
+      rx: 3, fill: 'var(--series-1)'
+    });
+    rect.style.cursor = 'pointer';
+    rect.addEventListener('mousemove', (ev) => {
+      showTooltip(ev.clientX, ev.clientY, `<b>${mo.label}</b><br>매출 ${fmtWon(mo.sell_revenue)}`);
+    });
+    rect.addEventListener('mouseleave', hideTooltip);
+    svg.appendChild(rect);
+
+    const t = el('text', { x: gx + barW / 2, y: topPad + chartH + 16, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = mo.label.slice(5) + '월';
+    svg.appendChild(t);
+  });
+
+  document.getElementById('chart-month-rev-wrap').appendChild(svg);
+})();
 
 // ================= Chart 1: grouped bar (buy vs sell count) =================
 (function () {
